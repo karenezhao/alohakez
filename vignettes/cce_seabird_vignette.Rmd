@@ -1,0 +1,72 @@
+---
+title: "cce_seabird_vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cce_seabird_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(alohakez)
+library(tidyverse)
+```
+
+```{r}
+cce_seabird %>%
+  filter(season=="sprg") %>%
+  ggplot(aes(x=year, y=bird_density)) +
+  geom_line(color="darkgreen", size=0.8) +
+  labs( x= "Year", y = "Bird Density",
+        title = "Spring Seabird Density from 1987 to 2006")
+```
+
+```{r}
+cce_seabird %>%
+  filter(season=="sprg") %>%
+  ggplot(aes(x=year, y=bird_richness)) +
+  geom_line(color="darkgreen", size=0.8) +
+  labs( x= "Year", y = "Bird Richness",
+        title = "Spring Seabird Richness from 1987 to 2006")
+```
+
+## Calculate Annual Average Bird Density and Richness
+```{r}
+annual_seabird <-  cce_seabird %>%
+  group_by(year) %>%
+  summarise(avg_bird_density=mean(bird_density),
+            avg_bird_richness=mean(bird_richness))
+```
+
+```{r}
+cce_seabird %>%
+  ggplot(aes(x=year)) +
+  geom_line(aes(y=bird_density, color=season), size=0.7) +
+  geom_line(aes(y=avg_bird_density), data=annual_seabird, size=0.8, linetype="dotdash") +
+  labs( x= "Year", y = "Bird Density",
+        title = "Seasonal Seabird Density in 1987 - 2006")
+
+cce_seabird %>%
+  ggplot(aes(x=year)) +
+  geom_line(aes(y=bird_richness, color=season), size=0.7) +
+  geom_line(aes(y=avg_bird_richness), data=annual_seabird, size=0.8, linetype="dotdash") +
+  labs( x= "Year", y = "Bird Richness",
+        title = "Seasonal Seabird Richness in 1987 - 2006")
+```
+
+```{r}
+cce_seabird %>%
+  ggplot(aes(x=bird_density, y=bird_richness)) +
+  geom_line(aes(color=season), size=0.7) +
+  geom_line(aes(x=avg_bird_density, y=avg_bird_richness), data=annual_seabird, size=0.8, linetype="dotdash") +
+  labs(x = "Bird Density", y = "Bird Richness",
+        title = "Bird Density vs Bird Richness")
+```
+
