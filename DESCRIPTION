@@ -12,3 +12,9 @@ LazyData: true
 URL: https://github.com/karenezhao/alohakez
 BugReports: https://github.com/karenezhao/alohakez/issues
 RoxygenNote: 7.1.1
+Imports: crayon, emo
+Remotes: hadley/emo
+Suggests: testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
