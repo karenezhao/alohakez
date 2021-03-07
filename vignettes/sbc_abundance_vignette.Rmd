@@ -1,0 +1,35 @@
+---
+title: "sbc_abundance_vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{sbc_abundance_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(alohakez)
+library(tidyverse)
+```
+
+
+## Make a subset of cutthroats only
+
+```{r}
+cutthroat <- alohakez::and_vertebrates %>% 
+  filter(SPECIES == "ONCL")
+```
+
+## Make a cool graph
+
+```{r}
+ggplot(data = cutthroat, aes(x = LENGTH1, y = WEIGHT)) +
+  geom_point()
+```
