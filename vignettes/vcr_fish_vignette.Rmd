@@ -1,0 +1,51 @@
+---
+title: "vcr_fish_vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{vcr_fish_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(alohakez)
+library(tidyverse)
+```
+
+## take a look at data first
+```{r}
+vcr_fish %>% head()
+summary(vcr_fish)
+typeof(vcr_fish$sample_date)
+typeof(vcr_fish$sample_time)
+```
+## pre-process data
+```{r}
+vcr_fish <- vcr_fish %>%
+  mutate( sample_date=as.Date(sample_date, "%Y-%m-%d") ) %>%
+  mutate(sample_year=as.numeric( format(sample_date, format = "%Y") ),
+         sample_month=as.numeric( format(sample_date, format = "%m") ),
+         sample_day=as.numeric( format(sample_date, format = "%d") )
+         )
+vcr_fish <- vcr_fish %>%
+  mutate(sample_hour=as.numeric(
+              format(as.POSIXct(sample_time, format = "%H:%M"), format = "%H")
+              ),
+         sample_min=as.numeric(
+           format(as.POSIXct(sample_time, format = "%H:%M"), format = "%M")
+           )
+        )
+```
+
+### check
+```{r}
+sapply(vcr_fish, typeof)
+```
+
