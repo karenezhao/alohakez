@@ -4,7 +4,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of alohakez is to ...
+The goal of alohakez is how to build an R package and explore lter data
 
 ## Installation
 
