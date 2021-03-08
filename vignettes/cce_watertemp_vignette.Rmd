@@ -1,0 +1,153 @@
+---
+title: "cce_watertemp_vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cce_watertemp_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(alohakez)
+library(tidyverse)
+```
+
+## Let's take a look at the data first
+```{r}
+cce_watertemp %>% head()
+sapply(cce_watertemp, typeof)
+```
+
+## Filter valid data: only 0 stands for good date 
+```{r}
+watertemp <- watertemp %>%
+  filter(sea_surface_temperature_flag==0) %>%
+  filter(!is.na(sea_surface_temperature_c))
+```
+
+## Calculate annual average 
+## Calculate lowest and highest temperature over years
+
+```{r}
+annual_temp <- watertemp %>%
+  group_by(year) %>%
+  summarize(annual_avg = mean(sea_surface_temperature_c,),
+            min_temp = min(sea_surface_temperature_c),
+            max_temp = max(sea_surface_temperature_c)) %>%
+  mutate(diff=max_temp-min_temp)
+```
+
+```{r}
+annual_temp %>%
+  ggplot(aes(x = year, y = annual_avg)) +
+  geom_point() +
+  labs(x = "Year",
+       y = "Mean Sea-Surface Temperature (C)",
+       title = "Annual Mean Sea-Surface Temperature from 1916 to 2015 (C)")
+```
+
+
+```{r}
+annual_temp %>%
+  ggplot(aes(x = year)) +
+  geom_point(aes(y=min_temp), color="blue") +
+  geom_point(aes(y=max_temp), color="orange") +
+  labs(x = "Year",
+       y = "Sea-Surface Temperature (C)",
+       title = "Lowest and Highest Day Sea-Surface Temperature (C)") +
+  theme_minimal()
+```
+
+```{r}
+annual_temp %>%
+  ggplot(aes(x = year, y = diff)) +
+  geom_point() +
+  labs(x = "Year",
+       y = "Sea-Surface Temperature (C)",
+       title = "Difference") 
+```
+
+## Calculate monthly average, minimum, and maximum
+```{r}
+monthly_temp <- watertemp %>%
+  group_by(year, month) %>%
+  summarize(monthly_avg = mean(sea_surface_temperature_c),
+            min_temp = min(sea_surface_temperature_c),
+            max_temp = max(sea_surface_temperature_c))
+```
+
+```{r}
+monthly_temp %>%
+  filter(year>2009) %>%
+  ggplot() +
+  geom_point(aes(x = month, y = monthly_avg)) +
+  labs(x = "Month",
+       y = "Mean Sea-Surface Temperature (C)",
+       title = "Sea-Surface Temperature (C) in Recent Years") +
+  facet_wrap(~year)
+```
+
+# See highest day
+```{r}
+highest_temp <-watertemp %>%
+    mutate(date_pst=as.Date(date_pst, "%Y/%m/%d")) %>%
+    group_by(year) %>%
+    slice(which.max(sea_surface_temperature_c))
+highest_temp <- highest_temp %>%
+    mutate(month_day=as.Date(paste(2222, month, day, sep = "/" )))
+highest_temp %>% head()
+highest_temp %>% tail()
+```
+
+```{r}
+highest_temp %>%
+  ggplot() +
+  geom_path(aes(x=year, y=month_day)) +
+  scale_y_date(date_breaks = "10 days", date_labels = "%b%d")
+```
+
+
+```{r}
+lowest_temp <-watertemp %>%
+    mutate(date_pst=as.Date(date_pst, "%Y/%m/%d")) %>%
+    group_by(year) %>%
+    slice(which.min(sea_surface_temperature_c))
+lowest_temp <- lowest_temp %>%
+    mutate(month_day=as.Date(paste(2222, month, day, sep = "/" )))
+lowest_temp %>% head()
+lowest_temp %>% tail()
+```
+
+
+```{r}
+lowest_temp %>%
+  ggplot() +
+  geom_point(aes(x=year, y=month_day)) +
+  scale_y_date(date_breaks = "1 month", date_labels = "%b%d")
+```
+```{r}
+lowest_temp <-watertemp %>%
+    mutate(date_pst=as.Date(date_pst, "%Y/%m/%d")) %>%
+    group_by(year) %>%
+    slice(which.min(sea_surface_temperature_c))
+lowest_temp <- lowest_temp %>%
+    mutate( month_day = as.Date(ifelse(month>=11,
+                               paste(2222, month, day, sep = "/" ), paste(2223, month, day, sep = "/" ) 
+                               )) )
+lowest_temp %>% head()
+lowest_temp %>% tail()
+```
+```{r}
+lowest_temp %>%
+  ggplot() +
+  geom_point(aes(x=year, y=month_day)) +
+  scale_y_date(date_breaks = "1 month", date_labels = "%b%d")
+```
+
