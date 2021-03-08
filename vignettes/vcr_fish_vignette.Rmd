@@ -26,7 +26,8 @@ summary(vcr_fish)
 typeof(vcr_fish$sample_date)
 typeof(vcr_fish$sample_time)
 ```
-## pre-process data
+
+## data pre-processing
 ```{r}
 vcr_fish <- vcr_fish %>%
   mutate( sample_date=as.Date(sample_date, "%Y-%m-%d") ) %>%
@@ -47,5 +48,88 @@ vcr_fish <- vcr_fish %>%
 ### check
 ```{r}
 sapply(vcr_fish, typeof)
+```
+
+## look at fish length
+```{r}
+vcr_fish %>%
+  ggplot() +
+  geom_histogram(aes(x=length), binwidth=20)
+```
+#### there is one super long fish, seems to vary across spieces
+
+# let's see how many species were measured
+```{r}
+vcr_fish %>%
+  count(count) 
+```
+```{r}
+vcr_fish %>% filter(is.na(count))
+```
+
+```{r}
+species_count <- vcr_fish %>%
+  filter(!is.na(count)) %>%
+  group_by(species_name) %>%
+  summarise(tot_count=sum(count))
+```
+```{r}
+species_count %>%
+  ggplot(aes(y=species_name) ) +
+  geom_bar(aes(weight = tot_count))
+```
+#### Pipefish, silversides, pinfish, silver perch, bay anchovy
+
+
+# Look at pipefish
+```{r}
+pipefish <- vcr_fish %>% 
+  filter(!is.na(count)) %>%
+  filter(species_name=="Pipefish")
+pipefish %>% filter(count!=1)
+pipefish %>% arrange(desc(count)) %>% head()
+```
+### duplicate rows
+```{r}
+pipe50fish <-pipefish %>% arrange(desc(count)) %>% slice(rep(1, each=50-1))
+pipe2fish <- pipefish %>% arrange(desc(count)) %>% slice(rep(2, each=2-1))
+pipefish <- pipefish %>%
+  bind_rows(pipe2fish) %>%
+  bind_rows(pipe50fish) 
+```
+
+
+# see length
+```{r}
+pipefish %>%
+  ggplot() +
+  geom_histogram(aes(length), binwidth=8)
+```
+
+### Look at pinfish
+```{r}
+pinfish <- vcr_fish %>% 
+  filter(!is.na(count)) %>%
+  filter(species_name=="Pinfish")
+pinfish %>% filter(count!=1)
+pinfish %>% filter(is.na(length))
+```
+
+#### see length
+```{r}
+pinfish %>%
+  ggplot() +
+  geom_histogram(aes(length), binwidth=10) 
+```
+
+```{r}
+pinfish %>% arrange(desc(length)) %>% head()
+pinfish %>% arrange(length) %>% head()
+```
+```{r}
+pinfish %>%
+  ggplot() +
+  geom_histogram(aes(length), binwidth=8) +
+  xlim(20, 240)
 ```
 
