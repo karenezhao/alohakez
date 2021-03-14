@@ -21,15 +21,21 @@ library(tidyverse)
 
 ## Let's take a look at the data first
 ```{r}
-cce_watertemp %>% head()
-sapply(cce_watertemp, typeof)
+cce_sst %>% head()
+sapply(cce_sst, typeof)
 ```
 
 ## Filter valid data: only 0 stands for good date 
 ```{r}
-watertemp <- cce_watertemp %>%
+watertemp <- cce_sst %>%
   filter(sea_surface_temperature_flag==0) %>%
   filter(!is.na(sea_surface_temperature_c))
+```
+## see invalid
+```{r}
+tmp <- cce_sst %>%
+  filter(sea_surface_temperature_flag!=0 | is.na(sea_surface_temperature_c)) 
+tmp %>% group_by(year) %>% count()
 ```
 
 ## Calculate annual average 
@@ -47,19 +53,23 @@ annual_temp <- watertemp %>%
 ### We look at the annual temperature over years
 ```{r}
 annual_temp %>%
+  filter(year>=1930) %>%
   ggplot(aes(x = year, y = annual_avg)) +
-  geom_point() +
+  geom_path(color="blue") +
   labs(x = "Year",
        y = "Mean Sea-Surface Temperature (C)",
-       title = "Annual Mean Sea-Surface Temperature from 1916 to 2015 (C)")
+       title = "Annual Mean Sea-Surface Temperature from 1930 to 2015 (C)") +
+  theme_bw() +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
 ### now see the min and max over years
 ```{r}
 annual_temp %>%
+  filter(year>=1930) %>%
   ggplot(aes(x = year)) +
-  geom_point(aes(y=min_temp), color="blue") +
-  geom_point(aes(y=max_temp), color="orange") +
+  geom_path(aes(y=min_temp), color="blue") +
+  geom_path(aes(y=max_temp), color="orange") +
   labs(x = "Year",
        y = "Sea-Surface Temperature (C)",
        title = "Lowest and Highest Day Sea-Surface Temperature (C)")
@@ -68,8 +78,9 @@ annual_temp %>%
 ### is there anything interesting about the range in years
 ```{r}
 annual_temp %>%
+  filter(year>=1930) %>%
   ggplot(aes(x = year, y = diff)) +
-  geom_point() +
+  geom_path() +
   labs(x = "Year",
        y = "Sea-Surface Temperature (C)",
        title = "Difference") 
@@ -84,17 +95,54 @@ monthly_temp <- watertemp %>%
             max_temp = max(sea_surface_temperature_c))
 ```
 
-### let's see how temp varies over month for recent years
+
 ```{r}
 monthly_temp %>%
-  filter(year>2009) %>%
+  filter(year>2002 & year<2015) %>%
   ggplot() +
-  geom_point(aes(x = month, y = monthly_avg)) +
-  labs(x = "Month",
-       y = "Mean Sea-Surface Temperature (C)",
-       title = "Sea-Surface Temperature (C) in Recent Years") +
-  facet_wrap(~year)
+  geom_path(aes(x=factor(month), y=monthly_avg, 
+                group=factor(year), color="dodgerblue"), size=1.2) +
+  theme_classic() +
+  facet_wrap(~year) +
+    labs(x="year", y="", 
+       title="monthly average temperature in recent years") +
+  theme(legend.position = "none")
 ```
+
+
+```{r}
+monthly_temp %>%
+  filter(year>2005 & year<2015) %>%
+  ggplot() +
+  geom_path(aes(x=factor(month), y=monthly_avg, 
+                group=factor(year), color=factor(year)), size=1) +
+  theme_minimal() +
+  labs(x="year", y="monthly average temperature", 
+       color="year",
+       title="temperature change monthly trends in recent years")
+  #scale_x_continuous(limits=c(0, 12))
+  #facet_grid(~month)
+```
+
+
+
+```{r}
+recent_temp <- monthly_temp %>% 
+  filter(year>2009 & year <2015) %>%
+  ungroup() %>%
+  select(monthly_avg)
+```
+
+### let's see how temp varies over month for recent years
+
+# A Season plot
+```{r}
+library(forecast)
+ggseasonplot(as.ts(recent_temp), col=rainbow(12), year.labels=TRUE)
+```
+
+
+
 
 ## when does temp reach highest 
 ```{r}
@@ -111,9 +159,14 @@ highest_temp %>% tail()
 ### map it
 ```{r}
 highest_temp %>%
+  filter(year>=1930) %>%
   ggplot() +
-  geom_path(aes(x=year, y=month_day)) +
-  scale_y_date(date_breaks = "10 days", date_labels = "%b%d")
+  geom_path(aes(x=year, y=month_day), color="sienna1", size=1) +
+  scale_y_date(date_breaks = "10 days", date_labels = "%b%d") +
+  theme_classic() +
+  labs(title="day of highest temperature") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
+  
 ```
 
 ### same thing for lowest
@@ -158,4 +211,8 @@ lowest_temp %>%
   geom_point(aes(x=year, y=month_day)) +
   scale_y_date(date_breaks = "1 month", date_labels = "%b%d")
 ```
+
+
+
+
 
