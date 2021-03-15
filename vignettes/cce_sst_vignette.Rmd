@@ -10,7 +10,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  warning = FALSE
 )
 ```
 
@@ -19,27 +20,37 @@ library(alohakez)
 library(tidyverse)
 ```
 
-## Let's take a look at the data first
+## California Current Ecosystem (CCE) LTER
+## Shore Stations Program SIO Pier Water Temperature
+### Daily sea-surface temperature(SST) measurements, collected and provided by the Shore Stations Program, La Jolla CA, 1916 - May 2019
+
+
+#### Let's take a look at the data first
 ```{r}
 cce_sst %>% head()
 sapply(cce_sst, typeof)
 ```
 
-## Filter valid data: only 0 stands for good date 
+#### Filter valid data: flag 0 stands for good data 
 ```{r}
 watertemp <- cce_sst %>%
   filter(sea_surface_temperature_flag==0) %>%
   filter(!is.na(sea_surface_temperature_c))
 ```
-## see invalid
+
+##### store invalid
 ```{r}
 tmp <- cce_sst %>%
   filter(sea_surface_temperature_flag!=0 | is.na(sea_surface_temperature_c)) 
-tmp %>% group_by(year) %>% count()
+tmp %>% group_by(year) %>% count() %>% head(10)
 ```
 
-## Calculate annual average 
-## Calculate lowest and highest temperature over years
+##### Initial years contain large amount of invalid/missing data
+##### we will look at data from 1930 onward
+
+
+### Calculate annual average 
+### Calculate lowest and highest temperature over years
 
 ```{r}
 annual_temp <- watertemp %>%
@@ -50,7 +61,7 @@ annual_temp <- watertemp %>%
   mutate(diff=max_temp-min_temp)
 ```
 
-### We look at the annual temperature over years
+#### let's look at the annual temperature over years
 ```{r}
 annual_temp %>%
   filter(year>=1930) %>%
@@ -63,7 +74,7 @@ annual_temp %>%
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-### now see the min and max over years
+#### now see the min and max temp over years
 ```{r}
 annual_temp %>%
   filter(year>=1930) %>%
@@ -72,10 +83,11 @@ annual_temp %>%
   geom_path(aes(y=max_temp), color="orange") +
   labs(x = "Year",
        y = "Sea-Surface Temperature (C)",
-       title = "Lowest and Highest Day Sea-Surface Temperature (C)")
+       title = "Lowest and Highest Day Sea-Surface Temperature (C)") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-### is there anything interesting about the range in years
+#### let's see if there's anything interesting about the max difference temp in years
 ```{r}
 annual_temp %>%
   filter(year>=1930) %>%
@@ -83,10 +95,11 @@ annual_temp %>%
   geom_path() +
   labs(x = "Year",
        y = "Sea-Surface Temperature (C)",
-       title = "Difference") 
+       title = "Difference") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-## Calculate monthly average, minimum, and maximum
+### Calculate monthly average, minimum, and maximum
 ```{r}
 monthly_temp <- watertemp %>%
   group_by(year, month) %>%
@@ -95,7 +108,21 @@ monthly_temp <- watertemp %>%
             max_temp = max(sea_surface_temperature_c))
 ```
 
+### let's see how temp varies over month for recent years
+```{r}
+monthly_temp %>%
+  filter(year>2005 & year<2015) %>%
+  ggplot() +
+  geom_path(aes(x=factor(month), y=monthly_avg, 
+                group=factor(year), color=factor(year)), size=1) +
+  theme_minimal() +
+  labs(x="year", y="monthly average temperature", 
+       color="year",
+       title="temperature change monthly trends in recent years")
+```
 
+#### plotting them on same graph seems a little messy 
+#### look at them separately
 ```{r}
 monthly_temp %>%
   filter(year>2002 & year<2015) %>%
@@ -111,40 +138,14 @@ monthly_temp %>%
 
 
 ```{r}
-monthly_temp %>%
-  filter(year>2005 & year<2015) %>%
-  ggplot() +
-  geom_path(aes(x=factor(month), y=monthly_avg, 
-                group=factor(year), color=factor(year)), size=1) +
-  theme_minimal() +
-  labs(x="year", y="monthly average temperature", 
-       color="year",
-       title="temperature change monthly trends in recent years")
-  #scale_x_continuous(limits=c(0, 12))
-  #facet_grid(~month)
-```
-
-
-
-```{r}
 recent_temp <- monthly_temp %>% 
   filter(year>2009 & year <2015) %>%
   ungroup() %>%
   select(monthly_avg)
 ```
 
-### let's see how temp varies over month for recent years
 
-# A Season plot
-```{r}
-library(forecast)
-ggseasonplot(as.ts(recent_temp), col=rainbow(12), year.labels=TRUE)
-```
-
-
-
-
-## when does temp reach highest 
+### when does temperature reach highest every year
 ```{r}
 highest_temp <-watertemp %>%
     mutate(date_pst=as.Date(date_pst, "%Y/%m/%d")) %>%
@@ -156,7 +157,7 @@ highest_temp %>% head()
 highest_temp %>% tail()
 ```
 
-### map it
+#### map it
 ```{r}
 highest_temp %>%
   filter(year>=1930) %>%
@@ -166,10 +167,10 @@ highest_temp %>%
   theme_classic() +
   labs(title="day of highest temperature") +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
-  
 ```
+#### varies, but within our expectations
 
-### same thing for lowest
+### let's try the same thing for lowest
 ```{r}
 lowest_temp <-watertemp %>%
     mutate(date_pst=as.Date(date_pst, "%Y/%m/%d")) %>%
@@ -181,7 +182,7 @@ lowest_temp %>% head()
 lowest_temp %>% tail()
 ```
 
-### map it
+#### map it
 ```{r}
 lowest_temp %>%
   ggplot() +
@@ -189,7 +190,7 @@ lowest_temp %>%
   scale_y_date(date_breaks = "1 month", date_labels = "%b%d")
 ```
 
-#### intersting, but hard to see, let's modify the month_day variable
+#### hard to see, let's modify the month_day variable
 #### we'll chose November as a cutoff
 ```{r}
 lowest_temp <-watertemp %>%
@@ -212,7 +213,8 @@ lowest_temp %>%
   scale_y_date(date_breaks = "1 month", date_labels = "%b%d")
 ```
 
-
+#### interesting result
+#### result of incorrect entries or irregular weathers on these days
 
 
 
