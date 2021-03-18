@@ -42,11 +42,13 @@ watertemp <- cce_sst %>%
 ```{r}
 tmp <- cce_sst %>%
   filter(sea_surface_temperature_flag!=0 | is.na(sea_surface_temperature_c)) 
-tmp %>% group_by(year) %>% count() %>% head(10)
+tmp %>% group_by(year) %>% count() %>% head(14)
 ```
 
 ##### Initial years contain large amount of invalid/missing data
-##### we will look at data from 1930 onward
+#### data for 1916 and 2015 are incompelte
+##### keep this in mind 
+#### consider looking data from 1930 onward
 
 
 ### Calculate annual average 
@@ -55,7 +57,7 @@ tmp %>% group_by(year) %>% count() %>% head(10)
 ```{r}
 annual_temp <- watertemp %>%
   group_by(year) %>%
-  summarize(annual_avg = mean(sea_surface_temperature_c,),
+  summarize(annual_avg = mean(sea_surface_temperature_c),
             min_temp = min(sea_surface_temperature_c),
             max_temp = max(sea_surface_temperature_c)) %>%
   mutate(diff=max_temp-min_temp)
@@ -64,12 +66,12 @@ annual_temp <- watertemp %>%
 #### let's look at the annual temperature over years
 ```{r}
 annual_temp %>%
-  filter(year>=1930) %>%
+  filter(year!=1916 & year!=2015) %>%
   ggplot(aes(x = year, y = annual_avg)) +
   geom_path(color="blue") +
   labs(x = "Year",
        y = "Mean Sea-Surface Temperature (C)",
-       title = "Annual Mean Sea-Surface Temperature from 1930 to 2015 (C)") +
+       title = "Annual Mean Sea-Surface Temperature from 1916 to 2015") +
   theme_bw() +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
@@ -77,13 +79,13 @@ annual_temp %>%
 #### now see the min and max temp over years
 ```{r}
 annual_temp %>%
-  filter(year>=1930) %>%
+  filter(year!=1916 & year!=2015) %>%
   ggplot(aes(x = year)) +
   geom_path(aes(y=min_temp), color="blue") +
-  geom_path(aes(y=max_temp), color="orange") +
+  geom_path(aes(y=max_temp), color="orangered1") +
   labs(x = "Year",
        y = "Sea-Surface Temperature (C)",
-       title = "Lowest and Highest Day Sea-Surface Temperature (C)") +
+       title = "Lowest and Highest Single Day Sea-Surface Temperature") +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   theme_minimal()
 ```
@@ -91,7 +93,7 @@ annual_temp %>%
 #### let's see if there's anything interesting about the max difference temp in years
 ```{r}
 annual_temp %>%
-  filter(year>=1930) %>%
+  filter(year!=1916 & year!=2015) %>%
   ggplot(aes(x = year, y = diff)) +
   geom_path() +
   labs(x = "Year",
