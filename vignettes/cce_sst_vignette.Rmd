@@ -138,14 +138,6 @@ monthly_temp %>%
 ```
 
 
-```{r}
-recent_temp <- monthly_temp %>% 
-  filter(year>2009 & year <2015) %>%
-  ungroup() %>%
-  select(monthly_avg)
-```
-
-
 ### when does temperature reach highest every year
 ```{r}
 highest_temp <-watertemp %>%
@@ -162,12 +154,14 @@ highest_temp %>% tail()
 ```{r}
 highest_temp %>%
   filter(year>=1930) %>%
-  ggplot() +
-  geom_path(aes(x=year, y=month_day), color="sienna1", size=1) +
+  ggplot(aes(x=year, y=month_day)) +
+  geom_path(color="sienna1", size=1) +
   scale_y_date(date_breaks = "10 days", date_labels = "%b%d") +
-  theme_classic() +
-  labs(title="day of highest temperature") +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  geom_text(aes(label=sea_surface_temperature_c), 
+            angle=10, size=3.2, vjust=0.5, color="darkgreen") +
+  labs(y="date", title="highest temperature in year") +
+  theme_classic()
 ```
 #### varies, but within our expectations
 
@@ -186,6 +180,7 @@ lowest_temp %>% tail()
 #### map it
 ```{r}
 lowest_temp %>%
+  filter(year>=1930) %>%
   ggplot() +
   geom_point(aes(x=year, y=month_day)) +
   scale_y_date(date_breaks = "1 month", date_labels = "%b%d")
@@ -194,7 +189,7 @@ lowest_temp %>%
 #### hard to see, let's modify the month_day variable
 #### we'll chose November as a cutoff
 ```{r}
-lowest_temp <-watertemp %>%
+lowest_temp <- watertemp %>%
     mutate(date_pst=as.Date(date_pst, "%Y/%m/%d")) %>%
     group_by(year) %>%
     slice(which.min(sea_surface_temperature_c))
@@ -206,13 +201,17 @@ lowest_temp %>% head()
 lowest_temp %>% tail()
 ```
 
-### map again
+### now map again
 ```{r}
 lowest_temp %>%
-  ggplot() +
-  geom_point(aes(x=year, y=month_day), color="slateblue3") +
+  filter(year>=1930) %>%
+  ggplot(aes(x=year, y=month_day)) +
+  geom_point(color="slateblue3") +
   scale_y_date(date_breaks = "1 month", date_labels = "%b%d") +
-  theme_classic()
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  geom_text(aes(label=sea_surface_temperature_c), 
+            angle=10, size=3, hjust=1, vjust=1, color="brown") +
+  labs(y="date", title="lowest temperature in year")
 ```
 
 #### interesting result
