@@ -84,113 +84,87 @@ species_count %>%
 ```
 
 ```{r}
-main_species <- species_count %>% filter(total_count>200)
-main_species <- main_species %>% 
+main_species_name <- species_count %>% filter(total_count>300)
+main_species_name <- main_species_name %>% 
   arrange(total_count) %>% 
   pull(species_name)
-main_species
+main_species_name 
 ```
 #### "Bay Anchovy"  "Silver Perch" "Silversides"  "Pinfish"  "Pipefish"
 
-
-## Look at pipefish, since it was measured the most by the scientists
+### look at these species
 ```{r}
-pipefish_r <- fish %>% 
-  filter(species_name==main_species[5])
-
-pipefish_r %>% filter(count!=1)
-pipefish_r %>% arrange(desc(count)) %>% head()
+main_species_r <- fish %>% filter(species_name %in% main_species_name)
+main_species_r %>% 
+  group_by(species_name) %>%
+  summarise(total_count=sum(count))
 ```
+
+```{r}
+main_species_r %>% filter(count!=1) %>% arrange(desc(count)) %>%
+  select(species_name, count, length)
+```
+## let's see a histogram based on species
+
+```{r}
+main_species_r %>% 
+  ggplot() +
+  geom_histogram(aes(x=length, fill=species_name), binwidth=10)
+```
+
+### we suspect there is an outlier, remove it
+```{r}
+pipefish_outlier <- main_species_r %>% slice_max(length) #store it in case
+main_species <- main_species_r %>% filter(length!=pipefish_outlier$length)
+```
+
+## let's plot it again
+```{r}
+main_species %>% 
+  ggplot() +
+  geom_histogram(aes(x=length, fill=species_name), binwidth=10)
+```
+
+```{r}
+main_species_r %>% filter(count!=1) %>% arrange(desc(count)) %>%
+  select(species_name, count, length)
+```
+
 #### there are rows where the count is bigger than one, if we want to analyze the data, it shuld be taken into account that those rows are weighed more
 
-### duplicate rows
 ```{r}
-pipe50fish <-pipefish_r %>% arrange(desc(count)) %>% slice(rep(1, each=50-1))
-pipe2fish <- pipefish_r %>% arrange(desc(count)) %>% slice(rep(2, each=2-1))
-pipefish <- pipefish_r %>%
-  bind_rows(pipe2fish) %>%
-  bind_rows(pipe50fish) 
+count2fish <- main_species %>% filter(count==2) %>% slice(rep(1:n(), each = 2-1))
+count3fish <- main_species %>% filter(count==3) %>% slice(rep(1:n(), each = 3-1))
+count5fish <- main_species %>% filter(count==5) %>% slice(rep(1:n(), each = 5-1))
+count6fish <- main_species %>% filter(count==6) %>% slice(rep(1:n(), each = 6-1))
+count19fish <- main_species %>% filter(count==19) %>% slice(rep(1:n(), each = 19-1))
+count50fish <- main_species %>% filter(count==50) %>% slice(rep(1:n(), each = 50-1))
+count56fish <- main_species %>% filter(count==56) %>% slice(rep(1:n(), each = 56-1))
+main_species <- main_species %>%
+  bind_rows(count2fish, count3fish, count5fish, count6fish,
+            count19fish, count50fish, count56fish)
 ```
 
+
+## draw desnity plot of these 3 fishes
+```{r}
+main_species %>% 
+  ggplot() +
+  geom_histogram(aes(x=length, fill=species_name), binwidth=10) +
+  labs(y="fish length", title="Histogram of fish length based on species")
+
+main_species %>%
+  ggplot(aes(x=length)) +
+  geom_histogram(aes(y = ..density.., fill=species_name, color=species_name), binwidth = 5) +
+  geom_density(aes(fill=species_name), alpha = 0.8, size=0.2)
+```
 
 # see length
 ```{r}
-pipefish %>%
+main_species %>%
+  #filter(species_name==main_species_name[2]) %>%
   ggplot() +
-  geom_histogram(aes(x=length), binwidth=8) +
-  #geom_density() +
-  #geom_density(aes(y=..density..), alpha=0.6)+
-  labs(title="Histogram of Length of Pipefish")
-```
-#### we can see there are two clusters
-
-
-### see if any relationship with other vars
-
-
-### Look at pinfish
-```{r}
-pinfish <- fish %>% 
-  filter(species_name=="Pinfish")
-pinfish %>% filter(count!=1)
-```
-
-#### see length
-```{r}
-pinfish %>%
-  ggplot() +
-  geom_histogram(aes(length), binwidth=10) 
-```
-
-```{r}
-long_pinfish <- pinfish %>% arrange(desc(length)) %>% head(1) %>% pull(length)
-```
-#### let's take out that value
-```{r}
-pinfish <- pinfish %>% filter(length!=long_pinfish)
-```
-
-```{r}
-pinfish %>%
-  ggplot() +
-  geom_histogram(aes(length), binwidth=10) 
-```
-
-## Look at silversides
-```{r}
-silversides_r <- fish %>% 
-  filter(species_name=="Silversides")
-
-silversides_r %>% filter(count!=1) %>% arrange(desc(count)) #%>%
-  #distinct(count)
-```
-### duplicate rows
-```{r}
-silver2fish <- silversides_r %>% filter(count==2) %>% slice(rep(1:n(), each = 2-1))
-silver3fish <- silversides_r %>% filter(count==3) %>% slice(rep(1:n(), each = 3-1))
-silver5fish <- silversides_r %>% filter(count==5) %>% slice(rep(1:n(), each = 5-1))
-silver6fish <- silversides_r %>% filter(count==6) %>% slice(rep(1:n(), each = 6-1))
-silver19fish <- silversides_r %>% filter(count==19) %>% slice(rep(1:n(), each = 19-1))
-silver56fish <- silversides_r %>% filter(count==56) %>% slice(rep(1:n(), each = 56-1))
-silversides <- silversides_r %>%
-  bind_rows(silver2fish,
-            silver3fish,
-            silver5fish,
-            silver6fish,
-            silver19fish,
-            silver56fish) 
-```
-
-### draw
-```{r}
-silversides %>%
-  ggplot() +
-  geom_histogram(aes(length), binwidth=10) 
-```
-## draw desnity plot of these 3 fishes
-```{r}
-bind_rows(pipefish, pinfish, silversides) %>%
-  ggplot(aes(x=length)) +
-  geom_histogram(aes(y = ..density.., fill=species_name, color=species_name), binwidth = 5) +
-  geom_density(aes(fill=species_name), alpha = 1, size=0.2)
+  geom_histogram(aes(length)) +
+  geom_density(fill=length)+
+  facet_wrap(~species_name) 
 ```
