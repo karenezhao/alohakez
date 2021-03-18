@@ -183,11 +183,28 @@ main_species %>%
 ```{r fig.width=10}
 main_species %>%
   ggplot(aes(length, fill = species_name, color=species_name)) +
-  geom_density(alpha=2, binwidth=15) +
+  geom_density(alpha=2) +
   facet_wrap(~species_name)
 ```
 
+### look at pipefish, intersting, why 2 clusters
 ```{r}
+main_species %>% filter(species_name=="Pipefish") %>%
+  group_by(sample_year, sample_month) %>% count()
+```
+```{r fig.width=15, fig.height=10}
+main_species %>% filter(species_name=="Pipefish") %>%
+  ggplot(aes(length, fill = species_name, color=species_name)) +
+  geom_histogram(binwidth=10) +
+  facet_wrap(~site)
+```
 
+
+```{r}
+main_species %>% filter(species_name=="Pipefish") %>%
+  ggplot() +
+  geom_point(aes(x=sample_date, y=length, color=site)) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %y") +
+  theme(axis.text.x = element_text(angle = 90, hjust=0, vjust=0)) 
 ```
 
