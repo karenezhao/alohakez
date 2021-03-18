@@ -90,6 +90,23 @@ annual_temp %>%
   theme_minimal()
 ```
 
+#### let's see them on same plot
+```{r}
+annual_temp %>%
+  filter(year!=1916 & year!=2015) %>%
+  ggplot(aes(x = year)) +
+  geom_path(aes(y=max_temp, color="highest"), size=0.6) +
+  geom_path(aes(y = annual_avg, color="mean"), size=1) +
+  geom_path(aes(y=min_temp, color="lowest"), size=0.7) +
+  labs(x = "Year",
+       y = "Sea-Surface Temperature (C)",
+       title = "Annual Sea-Surface Temperature from 1916 to 2015") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_colour_manual(name="",
+                      values=c("highest"="orangered1", "mean"="black","lowest"="blue")) +
+  theme_minimal()
+```
+
 #### let's see if there's anything interesting about the max difference temp in years
 ```{r}
 annual_temp %>%
