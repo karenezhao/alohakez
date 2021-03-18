@@ -108,5 +108,3 @@ annual_temp %>%
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(x='annual mean sea-surface temperature (C)')
 ```
-
-

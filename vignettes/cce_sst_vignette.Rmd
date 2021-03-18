@@ -84,7 +84,8 @@ annual_temp %>%
   labs(x = "Year",
        y = "Sea-Surface Temperature (C)",
        title = "Lowest and Highest Day Sea-Surface Temperature (C)") +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  theme_minimal()
 ```
 
 #### let's see if there's anything interesting about the max difference temp in years
@@ -209,8 +210,9 @@ lowest_temp %>% tail()
 ```{r}
 lowest_temp %>%
   ggplot() +
-  geom_point(aes(x=year, y=month_day)) +
-  scale_y_date(date_breaks = "1 month", date_labels = "%b%d")
+  geom_point(aes(x=year, y=month_day), color="slateblue3") +
+  scale_y_date(date_breaks = "1 month", date_labels = "%b%d") +
+  theme_classic()
 ```
 
 #### interesting result

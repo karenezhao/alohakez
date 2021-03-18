@@ -54,7 +54,7 @@ sapply(vcr_fish, typeof)
 ```{r}
 vcr_fish %>%
   ggplot() +
-  geom_histogram(aes(x=length), binwidth=20)
+  geom_histogram(aes(x=length), binwidth=30)
 ```
 #### there is one super long fish, seems to vary across spieces
 
@@ -63,37 +63,50 @@ vcr_fish %>%
 vcr_fish %>%
   count(count) 
 ```
+# filter out Na row for count & length since we focus on fish for now
 ```{r}
-vcr_fish %>% filter(is.na(count))
+fish <- vcr_fish %>% filter(!is.na(count) & !is.na(length)) 
 ```
 
+### We want to know how many of each species do we have
 ```{r}
-species_count <- vcr_fish %>%
-  filter(!is.na(count)) %>%
+species_count <- fish %>%
   group_by(species_name) %>%
   summarise(tot_count=sum(count))
+species_count
 ```
+#### from the plot, we can see there are 32 species in this data
+
 ```{r}
 species_count %>%
   ggplot(aes(y=species_name) ) +
   geom_bar(aes(weight = tot_count))
 ```
+
+```{r}
+
+```
+
+
+
 #### Pipefish, silversides, pinfish, silver perch, bay anchovy
 
 
-# Look at pipefish
+## Look at pipefish, since it was measured the most by the scientists
 ```{r}
-pipefish <- vcr_fish %>% 
-  filter(!is.na(count)) %>%
+pipefish_r <- fish %>% 
   filter(species_name=="Pipefish")
-pipefish %>% filter(count!=1)
-pipefish %>% arrange(desc(count)) %>% head()
+
+pipefish_r %>% filter(count!=1)
+pipefish_r %>% arrange(desc(count)) %>% head()
 ```
+#### there are rows where the count is bigger than one, if we want to analyze the data, it shuld be taken into account that those rows are weighed more
+
 ### duplicate rows
 ```{r}
-pipe50fish <-pipefish %>% arrange(desc(count)) %>% slice(rep(1, each=50-1))
-pipe2fish <- pipefish %>% arrange(desc(count)) %>% slice(rep(2, each=2-1))
-pipefish <- pipefish %>%
+pipe50fish <-pipefish_r %>% arrange(desc(count)) %>% slice(rep(1, each=50-1))
+pipe2fish <- pipefish_r %>% arrange(desc(count)) %>% slice(rep(2, each=2-1))
+pipefish <- pipefish_r %>%
   bind_rows(pipe2fish) %>%
   bind_rows(pipe50fish) 
 ```
@@ -103,16 +116,23 @@ pipefish <- pipefish %>%
 ```{r}
 pipefish %>%
   ggplot() +
-  geom_histogram(aes(length), binwidth=8)
+  geom_histogram(aes(length), binwidth=8) +
+  #geom_density(aes(y=..density..), alpha=0.6)+
+  labs(title="Histogram of Length of Pipefish")
 ```
+#### we can see there are two clusters
+
+
+### see if any relationship with other vars
+
+
+
 
 ### Look at pinfish
 ```{r}
-pinfish <- vcr_fish %>% 
-  filter(!is.na(count)) %>%
+pinfish <- fish %>% 
   filter(species_name=="Pinfish")
 pinfish %>% filter(count!=1)
-pinfish %>% filter(is.na(length))
 ```
 
 #### see length
@@ -123,13 +143,16 @@ pinfish %>%
 ```
 
 ```{r}
-pinfish %>% arrange(desc(length)) %>% head()
-pinfish %>% arrange(length) %>% head()
+long_pinfish <- pinfish %>% arrange(desc(length)) %>% head(1) %>% pull(length)
 ```
+#### let's take out that value
+```{r}
+pinfish <- pinfish %>% filter(length!=long_pinfish)
+```
+
 ```{r}
 pinfish %>%
   ggplot() +
-  geom_histogram(aes(length), binwidth=8) +
-  xlim(20, 240)
+  geom_histogram(aes(length), binwidth=10) 
 ```
 
