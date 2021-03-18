@@ -151,20 +151,43 @@ main_species <- main_species %>%
 main_species %>% 
   ggplot() +
   geom_histogram(aes(x=length, fill=species_name), binwidth=10) +
-  labs(y="fish length", title="Histogram of fish length based on species")
-
-main_species %>%
-  ggplot(aes(x=length)) +
-  geom_histogram(aes(y = ..density.., fill=species_name, color=species_name), binwidth = 5) +
-  geom_density(aes(fill=species_name), alpha = 0.8, size=0.2)
+  labs(y="fish length", 
+       title="Histogram of fish length based on species")
 ```
 
-# see length
 ```{r}
 main_species %>%
-  #filter(species_name==main_species_name[2]) %>%
-  ggplot() +
-  geom_histogram(aes(length)) +
-  geom_density(fill=length)+
-  facet_wrap(~species_name) 
+  ggplot(aes(x=length)) +
+  geom_histogram(aes(y = ..density.., 
+                     fill=species_name, color=species_name), binwidth = 10) +
+  geom_density(aes(fill=species_name), alpha = 0.8, size=0.2) +
+  labs(y="fish length", 
+       title="density plot of fish length")
 ```
+```{r}
+main_species %>%
+  ggplot(aes(length, fill=species_name, color=species_name)) +
+  geom_density(alpha = 0.6, position = "stack", binwidth = 10) + 
+  labs(y="fish length", 
+       title="stacked density plot of fish length")
+```
+
+### see each species
+```{r fig.width=10}
+main_species %>%
+  ggplot(aes(length, fill=species_name)) +
+  geom_histogram(binwidth=15) +
+  facet_wrap(~species_name)
+```
+
+```{r fig.width=10}
+main_species %>%
+  ggplot(aes(length, fill = species_name, color=species_name)) +
+  geom_density(alpha=2, binwidth=15) +
+  facet_wrap(~species_name)
+```
+
+```{r}
+
+```
+
