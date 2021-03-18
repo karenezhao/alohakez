@@ -64,9 +64,49 @@ cce_seabird %>%
 ```{r}
 cce_seabird %>%
   ggplot(aes(x=bird_density, y=bird_richness)) +
-  geom_line(aes(color=season), size=0.7) +
-  geom_line(aes(x=avg_bird_density, y=avg_bird_richness), data=annual_seabird, size=0.8, linetype="dotdash") +
+  geom_point(aes(color=season), size=1.2) +
+  geom_point(aes(x=avg_bird_density, y=avg_bird_richness), data=annual_seabird, size=1.5, linetype="dotdash") +
   labs(x = "Bird Density", y = "Bird Richness",
         title = "Bird Density vs Bird Richness")
 ```
+
+### bring in data from sea-surface temperature and see if there is any relationship
+
+#### look at sst in this time range 
+```{r}
+annual_temp %>%
+  filter(year>=1987 & year<=2006) %>%
+  ggplot(aes(x = year, y = annual_avg)) +
+  geom_path(color="blue") +
+  labs(x = "Year",
+       y = "Mean Sea-Surface Temperature (C)",
+       title = "Annual Mean Sea-Surface Temperature from 1987 to 2006 (C)") +
+  theme_bw() +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+
+#### now plot temp vs bird density
+```{r}
+annual_temp %>%
+  filter(year>=1987 & year<=2006) %>%
+  ggplot(aes(x = annual_avg, y = annual_seabird$avg_bird_density)) +
+  geom_point(color="darkgreen") +
+  theme_bw() +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  labs(x='annual mean sea-surface temperature (C)')
+```
+
+##### not sure
+
+#### now plot temp vs bird richness
+```{r}
+annual_temp %>%
+  filter(year>=1987 & year<=2006) %>%
+  ggplot(aes(x = annual_avg, y = annual_seabird$avg_bird_richness)) +
+  geom_point(color="purple") +
+  theme_bw() +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  labs(x='annual mean sea-surface temperature (C)')
+```
+
 
