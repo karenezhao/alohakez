@@ -73,7 +73,7 @@ cce_seabird %>%
 ### bring in data from sea-surface temperature and see if there is any relationship
 
 #### look at sst in this time range 
-```{r}
+```{r eval=FALSE}
 annual_temp %>%
   filter(year>=1987 & year<=2006) %>%
   ggplot(aes(x = year, y = annual_avg)) +
@@ -86,7 +86,7 @@ annual_temp %>%
 ```
 
 #### now plot temp vs bird density
-```{r eval=F}
+```{r eval=FALSE}
 annual_temp %>%
   filter(year>=1987 & year<=2006) %>%
   ggplot(aes(x = annual_avg, y = annual_seabird$avg_bird_density)) +
@@ -99,7 +99,7 @@ annual_temp %>%
 ##### not sure
 
 #### now plot temp vs bird richness
-```{r eval=F}
+```{r eval=FALSE}
 annual_temp %>%
   filter(year>=1987 & year<=2006) %>%
   ggplot(aes(x = annual_avg, y = annual_seabird$avg_bird_richness)) +
