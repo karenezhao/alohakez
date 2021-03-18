@@ -214,7 +214,5 @@ lowest_temp %>%
 ```
 
 #### interesting result
-#### result of incorrect entries or irregular weathers on these days
-
-
+#### could be result of incorrect entries or irregular weathers on these days
 
