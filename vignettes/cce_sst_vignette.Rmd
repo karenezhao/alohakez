@@ -51,6 +51,12 @@ data for 1916 and 2015 are incomplete
 keep this in mind \
 consider looking data from 1930 onward
 
+#### just curious, what has been the lowest and highest temperatrues
+```{r}
+watertemp %>% slice_max(sea_surface_temperature_c, n=6)
+watertemp %>% slice_min(sea_surface_temperature_c, n=6)
+```
+
 
 #### Calculate annual average , lowest and highest temperature over years
 ```{r}
@@ -256,6 +262,7 @@ fall_start <- as.Date("2224/09/22")
 wint_start <- as.Date("2224/12/21")
 sprg_start <- as.Date("2224/3/20")
 summ_start <- as.Date("2224/6/20")
+
 watertemp <- watertemp %>% mutate(
   season = case_when( month_day>=fall_start &  month_day<wint_start ~ "fall",
                       month_day>=wint_start | month_day<sprg_start  ~ "wint",
@@ -263,7 +270,7 @@ watertemp <- watertemp %>% mutate(
                       month_day>=summ_start &  month_day<fall_start ~ "summ"
                      )
   ) 
-watertemp %>% select(date_pst:day, month_day, season)
+#watertemp %>% select(date_pst:day, month_day, season)
 watertemp$season <- factor(watertemp$season, 
                                 levels = c("fall", "wint", "sprg", "summ"))
 levels(watertemp$season)[2:3]
@@ -345,3 +352,6 @@ seasonal_temp %>%
   facet_wrap(~season)
 ```
 compared to other seasons, when ocean enters winter, seasurfacetemperature does not vary that much, 
+
+
+
