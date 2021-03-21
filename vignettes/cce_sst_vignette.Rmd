@@ -107,6 +107,7 @@ annual_temp %>%
   theme_minimal()
 ```
 
+
 #### let's see if there's anything interesting about the max difference temp in years
 ```{r}
 annual_temp %>%
@@ -164,7 +165,7 @@ highest_temp <-watertemp %>%
     group_by(year) %>%
     slice(which.max(sea_surface_temperature_c))
 highest_temp <- highest_temp %>%
-    mutate(month_day=as.Date(paste(2222, month, day, sep = "/" )))
+    mutate(month_day=as.Date(paste(2224, month, day, sep = "/" )))
 highest_temp %>% head()
 highest_temp %>% tail()
 ```
@@ -191,7 +192,7 @@ lowest_temp <-watertemp %>%
     group_by(year) %>%
     slice(which.min(sea_surface_temperature_c))
 lowest_temp <- lowest_temp %>%
-    mutate(month_day=as.Date(paste(2222, month, day, sep = "/" )))
+    mutate(month_day=as.Date(paste(2224, month, day, sep = "/" )))
 lowest_temp %>% head()
 lowest_temp %>% tail()
 ```
@@ -214,7 +215,7 @@ lowest_temp <- watertemp %>%
     slice(which.min(sea_surface_temperature_c))
 lowest_temp <- lowest_temp %>%
     mutate( month_day = as.Date(ifelse(month>=11,
-                               paste(2222, month, day, sep = "/" ), paste(2223, month, day, sep = "/" ) 
+                               paste(2223, month, day, sep = "/" ), paste(2224, month, day, sep = "/" ) 
                                )) )
 lowest_temp %>% head()
 lowest_temp %>% tail()
@@ -235,4 +236,102 @@ lowest_temp %>%
 
 #### interesting result
 #### could be result of incorrect entries or irregular weathers on these days
+
+
+### try looking at data by season
+### we need to add season variable
+#### so when does f/w/s/u start?
+#### actually different each year (https://www.nationalgeographic.org/encyclopedia/season/)
+```{r}
+watertemp <- watertemp %>%
+    mutate(month_day=as.Date(paste(2224, month, day, sep = "/" )))
+```
+#### for our purpose, we will let each 
+- fall start on September 22, 
+- winter on December 21
+- spring on March 20 
+- and Summer begins on June 20
+```{r}
+fall_start <- as.Date("2224/09/22")
+wint_start <- as.Date("2224/12/21")
+sprg_start <- as.Date("2224/3/20")
+summ_start <- as.Date("2224/6/20")
+watertemp <- watertemp %>% mutate(
+  season = case_when( month_day>=fall_start &  month_day<wint_start ~ "fall",
+                      month_day>=wint_start | month_day<sprg_start  ~ "wint",
+                      month_day>=sprg_start &  month_day<summ_start ~ "sprg",
+                      month_day>=summ_start &  month_day<fall_start ~ "summ"
+                     )
+  ) 
+watertemp %>% select(date_pst:day, month_day, season)
+watertemp$season <- factor(watertemp$season, 
+                                levels = c("fall", "wint", "sprg", "summ"))
+levels(watertemp$season)[2:3]
+```
+
+## now, calc seasonal avergaes
+```{r}
+watertemp %>%
+  group_by(season) %>%
+  summarize(seasonal_avg = mean(sea_surface_temperature_c),
+            min_temp = min(sea_surface_temperature_c),
+            max_temp = max(sea_surface_temperature_c)) %>%
+  mutate(diff=max_temp-min_temp) #%>% arrange(season)
+```
+### matches our common sense
+
+### now, we want annual averages based on season
+```{r}
+seasonal_temp <- watertemp %>%
+  group_by(year, season) %>%
+  summarize(seasonal_avg = mean(sea_surface_temperature_c),
+            min_temp = min(sea_surface_temperature_c),
+            max_temp = max(sea_surface_temperature_c)) %>%
+  mutate(diff=max_temp-min_temp) #%>% arrange(season)
+```
+
+### graph it
+```{r}
+seasonal_temp %>%
+  #filter(year!=1916 & year!=2015) %>%
+  ggplot(aes(x=year)) +
+  geom_path(aes(y=seasonal_avg, color=season), size=1) +
+  geom_path(aes(y = annual_avg), size=1, alpha=0.5, data=annual_temp) +
+  theme_minimal() 
+
+seasonal_temp %>%
+  #filter(year!=1916 & year!=2015) %>%
+  ggplot(aes(x=year)) +
+  geom_path(aes(y=seasonal_avg, color=season), size=1) +
+  geom_path(aes(y = annual_avg), size=1, alpha=0.5, data=annual_temp) +
+  theme_minimal() +
+  facet_wrap(~season)
+```
+###like what we did before, sea highest & lowest of each season
+```{r}
+seasonal_temp %>%
+  #filter(year!=1916 & year!=2015) %>%
+  ggplot(aes(x = year)) +
+  geom_path(aes(y=max_temp, color="highest"), size=0.6) +
+  geom_path(aes(y=seasonal_avg, color="mean"), size=1) +
+  geom_path(aes(y=min_temp, color="lowest"), size=0.7) +
+  #labs(x = "Year",
+  #     y = "Sea-Surface Temperature (C)",
+   #    title = "Annual Sea-Surface Temperature from 1916 to 2015") +
+  scale_colour_manual(name="",
+                      values=c("highest"="orangered1", "mean"="black","lowest"="blue")) +
+  facet_wrap(~season)
+```
+
+### see diff
+```{r}
+seasonal_temp %>%
+  ggplot(aes(x = year, y = diff, color=season)) +
+  geom_path() +
+  labs(x = "Year",
+       y = "Sea-Surface Temperature (C)",
+       title = "Difference") +
+  facet_wrap(~season) +
+  geom_hline(yintercept=0, linetype="longdash")
+```
 
