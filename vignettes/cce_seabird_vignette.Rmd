@@ -26,12 +26,10 @@ library(tidyverse)
 ```{r}
 head(cce_seabird)
 tail(cce_seabird)
-cce_seabird %>% sapply(typeof)
 cce_seabird$year <- as.integer(cce_seabird$year)
 unique(cce_seabird$season)
 cce_seabird$season <- factor(cce_seabird$season, 
                                 levels = c("fall", "wint", "sprg", "summ"))
-cce_seabird %>% sapply(typeof)
 cce_seabird %>% head()
 ```
 
@@ -108,6 +106,8 @@ seabird <- seabird %>%
          diff_richness=bird_richness-avg_richness)
 head(seabird)
 ```
+
+###plot by season
 ```{r}
 seabird %>%
   ggplot(aes(x=year)) +
@@ -123,6 +123,7 @@ seabird %>%
   labs( x= "Year") +
   facet_wrap(~season)
 ```
+spring seems to have higher bird density and richness
 
 
 ### is there a relationship between density and richness
@@ -143,9 +144,99 @@ cce_seabird %>%
         title = "Bird Density vs Bird Richness") +
   facet_wrap(~season)
 ```
-### more density means more richness \
-### makes sense
+more density means more richness \
+makes sense
 
 
 ### bring in data from sea-surface temperature and see if there is any relationship
 
+### prep data first (Filter valid data: flag 0 stands for good data)
+```{r}
+cce_sst <- cce_sst %>%
+  filter(sea_surface_temperature_flag==0) %>%
+  filter(!is.na(sea_surface_temperature_c)) %>%
+  filter(year>=1980)                            #save computing
+cce_sst <- cce_sst %>%
+    mutate(month_day=as.Date(paste(2224, month, day, sep = "/" )))
+```
+
+#### now create season variable (see cce_sst for explanation)
+```{r}
+fall_start <- as.Date("2224/09/22")
+wint_start <- as.Date("2224/12/21")
+sprg_start <- as.Date("2224/3/20")
+summ_start <- as.Date("2224/6/20")
+
+cce_sst <- cce_sst %>% mutate(
+  season = case_when( month_day>=fall_start &  month_day<wint_start ~ "fall",
+                      month_day>=wint_start | month_day<sprg_start  ~ "wint",
+                      month_day>=sprg_start &  month_day<summ_start ~ "sprg",
+                      month_day>=summ_start &  month_day<fall_start ~ "summ"
+                     )
+  ) 
+cce_sst$season <- factor(cce_sst$season, 
+                                levels = c("fall", "wint", "sprg", "summ"))
+levels(cce_sst$season)[2:3]
+#cce_sst %>% select(date_pst:day, month_day, season)
+```
+##### calculate seasonal temperature
+```{r}
+annual_sst<- cce_sst %>%
+  group_by(year) %>%
+  summarize(annual_temp = mean(sea_surface_temperature_c))
+annual_sst %>% head()
+seasonal_sst <- cce_sst %>%
+  group_by(year, season) %>%
+  summarize(seasonal_temp = mean(sea_surface_temperature_c))
+seasonal_sst <- left_join(seasonal_sst, annual_sst)
+```
+
+##### merge data together
+```{r}
+bird_sst <- left_join(seabird, seasonal_sst) %>% arrange(year, season)
+bird_sst  %>% select(year, season, seasonal_temp, annual_temp)
+```
+#### before exploring relationship, see sst in these years
+```{r}
+bird_sst %>%
+  ggplot(aes(x=year)) +
+  geom_path(aes(y=seasonal_temp, color=season), size=1) +
+  geom_path(aes(y=annual_temp)) +
+  theme_minimal() +
+  labs(x = "Year", y = "Seasonal Sea-Surface Temperature (C)")
+```
+
+#### see shape 
+```{r}
+bird_sst %>%
+  ggplot(aes(x=year)) +
+  geom_path(aes(y=annual_temp), color="blue") +
+  geom_path(aes(y=avg_density)) +
+  geom_path(aes(y=avg_richness)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
+```
+#### there was a drop in sst, density, and richness between arround 96-99
+
+
+#####now 
+```{r}
+bird_sst %>%
+  ggplot() +
+  geom_point(aes(x=bird_density, y= seasonal_temp, color=season)) +
+  geom_point(aes(x=avg_density, y=annual_temp), alpha=0.6, shape=15, size=1)
+
+bird_sst %>%
+  ggplot() +
+  geom_point(aes(x=bird_density, y= seasonal_temp, color=season)) +
+  geom_point(aes(x=avg_density, y=annual_temp), alpha=0.6, shape=15, size=1) +
+  facet_wrap(~season)
+```
+
+
+```{r}
+bird_sst %>%
+  ggplot() +
+  geom_point(aes(x=bird_richness, y= seasonal_temp, color=season)) +
+  geom_point(aes(x=avg_richness, y=annual_temp), alpha=0.6, shape=15)
+```
+we see lower bird richness happens when temperature is lower than 18 
