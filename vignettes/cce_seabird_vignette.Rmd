@@ -10,7 +10,9 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 4
 )
 ```
 
@@ -19,92 +21,131 @@ library(alohakez)
 library(tidyverse)
 ```
 
+### take a look at data first
+### convert data types
 ```{r}
-cce_seabird %>%
-  filter(season=="sprg") %>%
-  ggplot(aes(x=year, y=bird_density)) +
-  geom_line(color="darkgreen", size=0.8) +
-  labs( x= "Year", y = "Bird Density",
-        title = "Spring Seabird Density from 1987 to 2006")
+head(cce_seabird)
+tail(cce_seabird)
+cce_seabird %>% sapply(typeof)
+cce_seabird$year <- as.integer(cce_seabird$year)
+unique(cce_seabird$season)
+cce_seabird$season <- factor(cce_seabird$season, 
+                                levels = c("fall", "wint", "sprg", "summ"))
+cce_seabird %>% sapply(typeof)
+cce_seabird %>% head()
 ```
 
+### how many years of data doo we have? do we have data for all 4 seasons?
 ```{r}
-cce_seabird %>%
-  filter(season=="sprg") %>%
-  ggplot(aes(x=year, y=bird_richness)) +
-  geom_line(color="darkgreen", size=0.8) +
-  labs( x= "Year", y = "Bird Richness",
-        title = "Spring Seabird Richness from 1987 to 2006")
+cce_seabird %>% group_by(year) %>% count()
+cce_seabird %>% group_by(season) %>% count()
 ```
 
 ## Calculate Annual Average Bird Density and Richness
 ```{r}
 annual_seabird <-  cce_seabird %>%
   group_by(year) %>%
-  summarise(avg_bird_density=mean(bird_density),
-            avg_bird_richness=mean(bird_richness))
+  summarise(avg_density=mean(bird_density),
+            avg_richness=mean(bird_richness))
 ```
 
 ```{r}
 cce_seabird %>%
   ggplot(aes(x=year)) +
-  geom_line(aes(y=bird_density, color=season), size=0.7) +
-  geom_line(aes(y=avg_bird_density), data=annual_seabird, size=0.8, linetype="dotdash") +
+  geom_line(aes(y=bird_density, color=season), size=1) +
+  geom_line(aes(y=avg_density), data=annual_seabird, color="black", size=0.8, linetype="dotdash") +
   labs( x= "Year", y = "Bird Density",
         title = "Seasonal Seabird Density in 1987 - 2006")
 
 cce_seabird %>%
   ggplot(aes(x=year)) +
-  geom_line(aes(y=bird_richness, color=season), size=0.7) +
-  geom_line(aes(y=avg_bird_richness), data=annual_seabird, size=0.8, linetype="dotdash") +
+  geom_line(aes(y=bird_richness, color=season), size=1) +
+  geom_line(aes(y=avg_richness), data=annual_seabird, size=0.8, linetype="dotdash") +
   labs( x= "Year", y = "Bird Richness",
         title = "Seasonal Seabird Richness in 1987 - 2006")
 ```
 
+#### density is decreasing for all four seasons, and annually mean
+
+#### seems like richness has been decreasing till 1997 and then going back
+
+#### might be result of missing data for some seaons in some year
+
+### too many lines, let's see each season separately
+```{r}
+cce_seabird %>%
+  ggplot(aes(x=year)) +
+  geom_line(aes(y=bird_density, color=season), size=1) +
+  geom_line(aes(y=avg_density), data=annual_seabird, color="black", size=0.8, linetype="dotdash") +
+  labs( x= "Year", y = "Bird Density",
+        title = "Seasonal Seabird Density in 1987 - 2006") +
+  facet_wrap(~season)
+
+cce_seabird %>%
+  ggplot(aes(x=year)) +
+  geom_line(aes(y=bird_richness, color=season), size=1) +
+  geom_line(aes(y=avg_richness), data=annual_seabird, size=0.8, linetype="dotdash") +
+  labs( x= "Year", y = "Bird Richness",
+        title = "Seasonal Seabird Richness in 1987 - 2006") +
+  facet_wrap(~season)
+```
+#### spring seems always above average
+
+### let's see the average based on season
+```{r}
+cce_seabird %>%
+  group_by(season) %>%
+  summarise(avg_density=mean(bird_density),
+            avg_richness=mean(bird_richness))
+```
+
+### calc difference
+```{r}
+seabird <- left_join(cce_seabird, annual_seabird)
+head(seabird)
+seabird <- seabird %>%
+  mutate(diff_density=bird_density-avg_density,
+         diff_richness=bird_richness-avg_richness)
+head(seabird)
+```
+```{r}
+seabird %>%
+  ggplot(aes(x=year)) +
+  geom_point(aes(y=diff_density, color=season)) +
+  geom_hline(yintercept=0, linetype="longdash") +
+  labs( x= "Year") +
+  facet_wrap(~season)
+
+seabird %>%
+  ggplot(aes(x=year)) +
+  geom_point(aes(y=diff_richness, color=season)) +
+  geom_hline(yintercept=0, linetype="longdash") +
+  labs( x= "Year") +
+  facet_wrap(~season)
+```
+
+
+### is there a relationship between density and richness
+
 ```{r}
 cce_seabird %>%
   ggplot(aes(x=bird_density, y=bird_richness)) +
-  geom_point(aes(color=season), size=1.2) +
-  geom_point(aes(x=avg_bird_density, y=avg_bird_richness), data=annual_seabird, size=1.5, linetype="dotdash") +
+  geom_point(aes(color=season)) +
+  geom_point(aes(x=avg_density, y=avg_richness), alpha=0.6, shape=15, data=annual_seabird) +
   labs(x = "Bird Density", y = "Bird Richness",
         title = "Bird Density vs Bird Richness")
+
+cce_seabird %>%
+  ggplot(aes(x=bird_density, y=bird_richness)) +
+  geom_point(aes(color=season)) +
+  #geom_point(aes(x=avg_density, y=avg_richness), alpha=0.6, shape=15, data=annual_seabird) +
+  labs(x = "Bird Density", y = "Bird Richness",
+        title = "Bird Density vs Bird Richness") +
+  facet_wrap(~season)
 ```
+### more density means more richness \
+### makes sense
+
 
 ### bring in data from sea-surface temperature and see if there is any relationship
 
-#### look at sst in this time range 
-```{r eval=FALSE}
-annual_temp %>%
-  filter(year>=1987 & year<=2006) %>%
-  ggplot(aes(x = year, y = annual_avg)) +
-  geom_path(color="blue") +
-  labs(x = "Year",
-       y = "Mean Sea-Surface Temperature (C)",
-       title = "Annual Mean Sea-Surface Temperature from 1987 to 2006 (C)") +
-  theme_bw() +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
-```
-
-#### now plot temp vs bird density
-```{r eval=FALSE}
-annual_temp %>%
-  filter(year>=1987 & year<=2006) %>%
-  ggplot(aes(x = annual_avg, y = annual_seabird$avg_bird_density)) +
-  geom_point(color="darkgreen") +
-  theme_bw() +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(x='annual mean sea-surface temperature (C)')
-```
-
-##### not sure
-
-#### now plot temp vs bird richness
-```{r eval=FALSE}
-annual_temp %>%
-  filter(year>=1987 & year<=2006) %>%
-  ggplot(aes(x = annual_avg, y = annual_seabird$avg_bird_richness)) +
-  geom_point(color="purple") +
-  theme_bw() +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(x='annual mean sea-surface temperature (C)')
-```
