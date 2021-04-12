@@ -32,33 +32,32 @@ cce_sst %>% head()
 sapply(cce_sst, typeof)
 ```
 
-#### Filter valid data: flag 0 stands for good data 
+#### Filter valid data: Notice only the value 0 stands for good data 
 ```{r}
 watertemp <- cce_sst %>%
   filter(sea_surface_temperature_flag==0) %>%
   filter(!is.na(sea_surface_temperature_c))
 ```
 
-##### store invalid
+##### Store invalid
 ```{r}
-tmp <- cce_sst %>%
+sst_invalid <- cce_sst %>%
   filter(sea_surface_temperature_flag!=0 | is.na(sea_surface_temperature_c)) 
-tmp %>% group_by(year) %>% count() %>% head(14)
+sst_invalid %>% group_by(year) %>% count() %>% head(14)
 ```
 
-we see that initial years contain large amount of invalid/missing data \
-data for 1916 and 2015 are incomplete
-keep this in mind \
-consider looking data from 1930 onward
+We see that initial years contain large amount of invalid/missing data \
+Data from 1930 onward are more complete \
+Data for 1916 and 2015 are incomplete. \
+We should keep these in mind moving forward
 
-#### just curious, what has been the lowest and highest temperatrues
+#### What has been the lowest and highest temperatures?
 ```{r}
 watertemp %>% slice_max(sea_surface_temperature_c, n=6)
 watertemp %>% slice_min(sea_surface_temperature_c, n=6)
 ```
 
-
-#### Calculate annual average , lowest and highest temperature over years
+#### Calculate Annual average, lowest & highest temperature over years
 ```{r}
 annual_temp <- watertemp %>%
   group_by(year) %>%
@@ -68,7 +67,7 @@ annual_temp <- watertemp %>%
   mutate(diff=max_temp-min_temp)
 ```
 
-#### let's look at the annual temperature over years
+#### Plot annual temperature over years
 ```{r fig.width=6, fig.height=4}
 annual_temp %>%
   filter(year!=1916 & year!=2015) %>%
@@ -81,7 +80,7 @@ annual_temp %>%
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
-#### now see the min and max temp over years
+#### Now Plot the min and max temperature over years
 ```{r fig.width=6, fig.height=4}
 annual_temp %>%
   filter(year!=1916 & year!=2015) %>%
@@ -95,7 +94,7 @@ annual_temp %>%
   theme_minimal()
 ```
 
-#### let's see them on same plot
+#### See them on the same plot
 ```{r}
 annual_temp %>%
   filter(year!=1916 & year!=2015) %>%
@@ -113,7 +112,7 @@ annual_temp %>%
 ```
 
 
-#### let's see if there's anything interesting about the max difference temp in years
+#### Let's see if there's anything interesting about the max difference temp
 ```{r  fig.width=6, fig.height=4}
 annual_temp %>%
   filter(year!=1916 & year!=2015) %>%
@@ -124,7 +123,7 @@ annual_temp %>%
        title = "Difference") +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
-can't tell any trend
+can't tell any trend from this plot
 
 #### Calculate monthly average, minimum, and maximum
 ```{r}
@@ -135,7 +134,7 @@ monthly_temp <- watertemp %>%
             max_temp = max(sea_surface_temperature_c))
 ```
 
-#### let's see how temp varies over month for recent years
+#### Let's see how temp varies over month for more recent years
 ```{r}
 monthly_temp %>%
   filter(year>2005 & year<2015) %>%
@@ -147,9 +146,9 @@ monthly_temp %>%
        color="year",
        title="temperature change monthly trends in recent years")
 ```
+Plotting them on same graph seems a little messy 
 
-#### plotting them on same graph seems a little messy 
-#### look at them separately
+#### Look at them separately
 ```{r}
 monthly_temp %>%
   filter(year>2002 & year<2015) %>%
@@ -164,7 +163,7 @@ monthly_temp %>%
 ```
 
 
-#### when does temperature reach highest every year
+#### When does temperature reach its highest every year?
 ```{r}
 highest_temp <-watertemp %>%
     mutate(date_pst=as.Date(date_pst, "%Y/%m/%d")) %>%
@@ -176,7 +175,7 @@ highest_temp %>% head()
 highest_temp %>% tail()
 ```
 
-#### map it
+#### Map it
 ```{r}
 highest_temp %>%
   filter(year>=1930) %>%
@@ -189,9 +188,9 @@ highest_temp %>%
   labs(y="date", title="highest temperature in year") +
   theme_classic()
 ```
-varies, but within our expectations
+the day varies, but it is still within our expectations
 
-#### let's try the same thing for lowest
+#### Let's try the same thing for lowest
 ```{r}
 lowest_temp <-watertemp %>%
     mutate(date_pst=as.Date(date_pst, "%Y/%m/%d")) %>%
@@ -203,7 +202,7 @@ lowest_temp %>% head()
 lowest_temp %>% tail()
 ```
 
-#### map it
+#### Map it
 ```{r}
 lowest_temp %>%
   filter(year>=1930) %>%
@@ -211,9 +210,9 @@ lowest_temp %>%
   geom_point(aes(x=year, y=month_day)) +
   scale_y_date(date_breaks = "1 month", date_labels = "%b%d")
 ```
+hard to see
 
-#### hard to see, let's modify the month_day variable
-#### we'll chose November as a cutoff
+#### Let's modify the month_day variable. We'll chose November as a cutoff
 ```{r}
 lowest_temp <- watertemp %>%
     mutate(date_pst=as.Date(date_pst, "%Y/%m/%d")) %>%
@@ -227,7 +226,7 @@ lowest_temp %>% head()
 lowest_temp %>% tail()
 ```
 
-#### now again
+#### now map again
 ```{r}
 lowest_temp %>%
   filter(year>=1930) %>%
@@ -241,18 +240,18 @@ lowest_temp %>%
 ```
 
 interesting result \
-could be result of incorrect entries or irregular weathers on these days
+this could be a result of incorrect entries or irregular weathers on these days
 
 
-#### consider looking at data by season
-we can create a new variable season using dates \
-so when does f/w/s/u start?
-#### actually different each year (https://www.nationalgeographic.org/encyclopedia/season/)
+### Seasonal plot is always a powerful visualization
+### Since this data does not have a season column, you can create a new variable season youself using dates \
+#### So when does f/w/s/u start?
+#### According to article from national geographic(https://www.nationalgeographic.org/encyclopedia/season/), it actually varies a bit each year 
 ```{r}
 watertemp <- watertemp %>%
     mutate(month_day=as.Date(paste(2224, month, day, sep = "/" )))
 ```
-##### for our purpose, we will let each 
+##### But for our purpose, we will let each 
 - fall start on September 22, 
 - winter on December 21
 - spring on March 20 
@@ -276,7 +275,7 @@ watertemp$season <- factor(watertemp$season,
 levels(watertemp$season)[2:3]
 ```
 
-#### now, calc seasonal avergaes across years
+#### we can take a look at the seasonal averages across years
 ```{r}
 watertemp %>%
   group_by(season) %>%
@@ -285,9 +284,9 @@ watertemp %>%
             max_temp = max(sea_surface_temperature_c)) %>%
   mutate(diff=max_temp-min_temp) #%>% arrange(season)
 ```
-results makes sense
+the results makes sense
 
-#### now, we want annual averages based on season
+#### Now we want annual averages based on season
 ```{r}
 seasonal_temp <- watertemp %>%
   group_by(year, season) %>%
@@ -297,7 +296,7 @@ seasonal_temp <- watertemp %>%
   mutate(diff=max_temp-min_temp) #%>% arrange(season)
 ```
 
-#### graph it
+#### Plot it
 ```{r}
 seasonal_temp %>%
   #filter(year!=1916 & year!=2015) %>%
@@ -316,11 +315,11 @@ seasonal_temp %>%
   labs(x = "Year", y = "Seasonal Sea-Surface Temperature (C)") +
   facet_wrap(~season)
 ```
-winter below average, expecting that
-we see that spring is also below average, possibly a result of water having a higher heat capacity(meaning it takes more energy to increase the temperature of water compared to other substances)
+Winter is below average, we are expecting that \
+We see that spring is also below average. This is probably a result of water having a higher heat capacity (meaning it takes more energy to increase the temperature of water compared to other substances)
 
 
-####like what we did before for annual_temp, see highest & lowest of that season
+#### Like what we did before for annual_temp, see highest & lowest of that season
 ```{r}
 seasonal_temp %>%
   #filter(year!=1916 & year!=2015) %>%
@@ -334,7 +333,7 @@ seasonal_temp %>%
   labs(x = "Year", y = "Seasonal Sea-Surface Temperature (C)")
 ```
 
-#### see diff
+#### See diff
 ```{r}
 seasonal_temp %>%
   ggplot(aes(x = year, y = diff)) +
@@ -351,7 +350,7 @@ seasonal_temp %>%
   labs(x = "Year", y = "Seasonal Sea-Surface Temperature (C)") +
   facet_wrap(~season)
 ```
-compared to other seasons, when ocean enters winter, seasurfacetemperature does not vary that much, 
+compared to other seasons, when ocean enters winter, the sea surface temperature does not vary that much, 
 
 
 
