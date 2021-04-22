@@ -3,6 +3,7 @@
 # Attach packages
 library(usethis)
 library(metajam)
+library(janitor)
 
 # Save link location for the data package:
 cce_url <- "https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-cce.15.4&entityid=411c8b8769c4578be6702ee44bdb712e"

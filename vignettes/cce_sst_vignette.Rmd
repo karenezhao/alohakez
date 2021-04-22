@@ -76,7 +76,7 @@ annual_temp %>%
   labs(x = "Year",
        y = "Mean Sea-Surface Temperature (C)",
        title = "Annual Mean Sea-Surface Temperature from 1916 to 2015") +
-  theme_bw() +
+  theme_minimal() +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
 ```
 
@@ -121,7 +121,8 @@ annual_temp %>%
   labs(x = "Year",
        y = "Sea-Surface Temperature (C)",
        title = "Difference") +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  theme_minimal()
 ```
 can't tell any trend from this plot
 
@@ -141,10 +142,10 @@ monthly_temp %>%
   ggplot() +
   geom_path(aes(x=factor(month), y=monthly_avg, 
                 group=factor(year), color=factor(year)), size=1) +
-  theme_minimal() +
   labs(x="year", y="monthly average temperature", 
        color="year",
-       title="temperature change monthly trends in recent years")
+       title="temperature change monthly trends in recent years") +
+  theme_minimal()
 ```
 Plotting them on same graph seems a little messy 
 
@@ -170,7 +171,7 @@ highest_temp <-watertemp %>%
     group_by(year) %>%
     slice(which.max(sea_surface_temperature_c))
 highest_temp <- highest_temp %>%
-    mutate(month_day=as.Date(paste(2224, month, day, sep = "/" )))   #lunaryeartoavoid229confusion
+    mutate(month_day=as.Date(paste(2224, month, day, sep = "/" )))   # choose a lunar year that is in the future
 highest_temp %>% head()
 highest_temp %>% tail()
 ```
@@ -186,7 +187,7 @@ highest_temp %>%
   geom_text(aes(label=sea_surface_temperature_c), 
             angle=10, size=3.2, vjust=0.5, color="darkgreen") +
   labs(y="date", title="highest temperature in year") +
-  theme_classic()
+  theme_minimal()
 ```
 the day varies, but it is still within our expectations
 
@@ -236,7 +237,8 @@ lowest_temp %>%
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   geom_text(aes(label=sea_surface_temperature_c), 
             angle=10, size=3, hjust=1, vjust=1, color="brown") +
-  labs(y="date", title="lowest temperature in year")
+  labs(y="date", title="lowest temperature in year") +
+  theme_minimal()
 ```
 
 interesting result \
@@ -275,7 +277,7 @@ watertemp$season <- factor(watertemp$season,
 levels(watertemp$season)[2:3]
 ```
 
-#### we can take a look at the seasonal averages across years
+#### We can take a look at the seasonal averages across years
 ```{r}
 watertemp %>%
   group_by(season) %>%
@@ -303,7 +305,6 @@ seasonal_temp %>%
   ggplot(aes(x=year)) +
   geom_path(aes(y=seasonal_avg, color=season), size=1) +
   geom_path(aes(y = annual_avg), size=1, alpha=0.5, data=annual_temp) +
-  theme_minimal() +
   labs(x = "Year", y = "Seasonal Sea-Surface Temperature (C)")
 
 seasonal_temp %>%
@@ -311,7 +312,6 @@ seasonal_temp %>%
   ggplot(aes(x=year)) +
   geom_path(aes(y=seasonal_avg, color=season), size=1) +
   geom_path(aes(y = annual_avg), size=1, alpha=0.5, data=annual_temp) +
-  theme_minimal() +
   labs(x = "Year", y = "Seasonal Sea-Surface Temperature (C)") +
   facet_wrap(~season)
 ```
@@ -333,7 +333,7 @@ seasonal_temp %>%
   labs(x = "Year", y = "Seasonal Sea-Surface Temperature (C)")
 ```
 
-#### See diff
+#### See the difference
 ```{r}
 seasonal_temp %>%
   ggplot(aes(x = year, y = diff)) +
@@ -350,7 +350,7 @@ seasonal_temp %>%
   labs(x = "Year", y = "Seasonal Sea-Surface Temperature (C)") +
   facet_wrap(~season)
 ```
-compared to other seasons, when ocean enters winter, the sea surface temperature does not vary that much, 
+compared to other seasons, when ocean enters winter, the sea surface temperature does not vary that much 
 
 
 
