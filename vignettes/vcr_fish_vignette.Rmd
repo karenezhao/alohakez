@@ -115,7 +115,7 @@ main_species_r %>%
 ### we suspect there is an outlier, remove it
 ```{r}
 pinfish_outlier <- main_species_r %>% slice_max(length) #store it in case
-main_species <- main_species_r %>% filter(length!=pipefish_outlier$length)
+main_species <- main_species_r %>% filter(length!=pinfish_outlier$length)
 ```
 
 ## let's plot it again

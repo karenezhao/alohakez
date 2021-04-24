@@ -17,4 +17,10 @@ cce_sst
 \description{
 Daily sea-surface temperature measurements, collected and provided by the Shore Stations Program, La Jolla CA, 1916 - May 2019
 }
+\details{
+\describe{
+  \item{sea_surface_temperature_c}{temperature measurement in Celsius}
+  \item{sea_surface_temperature_flag}{0 = good data, 1 = illegible entry, 2 = data differs from other sources, ie. temperature vs. salinity record, 3 = data uncertain, 4 = leaky bottle, 5 = SIO Pier Chlorophyll Program Data}
+  }
+}
 \keyword{datasets}
