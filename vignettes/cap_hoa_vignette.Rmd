@@ -1,0 +1,52 @@
+---
+title: "cap_hoa_vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cap_hoa_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(alohakez)
+library(tidyverse)
+```
+
+## Homeowner Associations (HOA) as a Vehicle for Promoting Native Urban Biodiversity
+
+#### Background Information
+"Phoenix has experienced dramatic land-use and land-cover change over the past 20 years as it has become one of the fastest growing American cities (U.S. Census Bureau 2000). Virtually all new development during this period used HOA management. Such patterns of rapid growth dominated by HOA management are not unique to Phoenix; subdivisions across the United States face similar challenges of improving biodiversity potential in planned communities.
+This data is from a study that investigated the relationship between HOAs and biodiversity in Phoenix, Arizona, through the CAP LTER project. The scientists focused on 39 of the 204 long-term monitoring plots, all located in residential land uses. \
+
+#### Take a look at data
+```{r}
+cap_hoa %>% head()
+sapply(cap_hoa, typeof)
+cap_hoa <- cap_hoa %>% mutate(hoa=factor(hoa)) # factor hoa
+sapply(cap_hoa, typeof)
+```
+
+#### Homeowner Association Classification 
+```{r}
+cap_hoa %>% filter
+(!is.na(nat_bird)) %>% group_by(hoa) %>% count()
+cap_hoa %>% filter(!is.na(plnt)) %>% group_by(hoa) %>% count()
+cap_hoa %>% filter(!is.na(arthropod)) %>% group_by(hoa) %>% count()
+```
+ Roughly half of all monitoring sites belonged to a HOA
+ 
+#### compare native bird diversity, plant diversity, and arthropod diversity between neighborhoods with and without a HOA.
+```{r}
+diversity <- cap_hoa %>% select(c(site, hoa, nat_bird:arthropod)) 
+diversity %>%
+  gather(diversity_type, value, nat_bird:arthropod) %>%
+  ggplot(aes(x=diversity_type, y=value, fill=hoa)) +
+  geom_boxplot()
+```
