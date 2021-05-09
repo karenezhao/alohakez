@@ -3,15 +3,22 @@
 #' characteristics of HOAs in the greater Phoenix metropolitan area, and corresponding animal (bird or arthropod) and plant diversity within those communities
 #' The Shannon diversity index is commonly used to characterize species diversity in a community. It accounts for both abundance and evenness of the species present.
 #'
-#'  \describe{
+#' @format A tibble with 39 rows and 13 variables:
+#' \describe{
+#'   \item{site}{Survey 200 site name}
+#'   \item{year}{Year HOA developed}
 #'   \item{hoa}{Is the neighborhood part of a HOA? 1=yes, 2=no}
 #'   \item{nat_bird}{Native bird diversity index (Shannon) from PASS bird survey}
 #'   \item{plnt}{Plant diversity index (Shannon) from 2005 Survey 200}
 #'   \item{arthropod}{Arthropod diversity (Shannon) from 2005 Survey 200}
+#'   \item{income}{Median household income of US Census Block Group}
+#'   \item{yrbuilt}{Average age of housing stock in US Census Block Group}
+#'   \item{x3hadist}{At Survey 200 plot center, distance to 3.2 ha contiguous desert tract (m)}
+#'   \item{x1km_imp}{At Survey 200 plot center. Decimal fraction of 1 km plot classified impervious surface}
 #'   \item{num_te}{Total number of thin-leaf evergreen trees along 100m transect at Survey 200 plot center}
 #'   }
 #'
-#' @source {Lerman, S. 2016. Homeowner Associations as a vehicle for promoting native urban biodiversity ver 1. Environmental Data Initiative. https://doi.org/10.6073/pasta/e7fb691d6b4bf6974ece085f22ab63fc (Accessed 2021-05-03).}
-#' \url{https://portal.edirepository.org/nis/mapbrowse?packageid=knb-lter-cap.640.1}
+#' @source {Lerman, S. 2016. Homeowner Associations as a vehicle for promoting native urban biodiversity ver 1. Environmental Data Initiative.}
+#' \url{https://doi.org/10.6073/pasta/e7fb691d6b4bf6974ece085f22ab63fc}
 
 "cap_hoa"
