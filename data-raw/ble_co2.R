@@ -43,7 +43,23 @@ ble_co2 <- ble_data %>%
   ) %>%
   mutate(across(where(is.numeric), ~na_if(., -9999.00))) #
 
-ble_tundra %>%
+# Join next file
+
+ble_url2 <- "https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-ble.1.7&entityid=617415426847fd900b644283d86c1c66"
+ble_download2 <- download_d1_data(data_url = ble_url2, path = tempdir(), dir_name = "ble2")
+
+ble_files2 <- read_d1_files(ble_download2)
+ble_data2 <- ble_files2$data
+tundra <- ble_data2 %>% clean_names() %>%
+  rename(daily_rain = daily_rain_mm) %>%
+  select(latitude, longitude, year, julian_day, daily_rain)
+tundra_day <- tundra[!duplicated(tundra), ] %>% filter(year>2014)
+
+ble_co2 <- left_join(ble_co2, tundra_day,
+            by = c("latitude" = "latitude", "longitude" = "longitude",
+                   'year' = 'year', 'julian_day' = 'julian_day')
+            ) %>%
+  relocate(location_notes, .after = last_col())
 
 #+ save data, include=FALSE, eval=FALSE
 usethis::use_data(ble_co2, overwrite = TRUE)

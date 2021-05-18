@@ -5,7 +5,7 @@
 \alias{ble_co2}
 \title{Carbon flux from aquatic ecosystems of the Arctic Coastal Plain along the Beaufort Sea, Alaska, 2010-2018}
 \format{
-A tibble with 231 rows and 17 variables:
+A tibble with 231 rows and 16 variables:
 \describe{
   \item{year}{Year data were collected}
   \item{habitat}{Habitat type (pond, lake, river, lagoon, ocean):
@@ -22,11 +22,13 @@ A tibble with 231 rows and 17 variables:
   \item{water_temp_c}{Water temperature in degrees Celsius}
   \item{pCO2}{Partial pressure of CO2 (uatm)}
   \item{air_temp_c}{Air temperature in degrees Celsius}
+  \item{daily_rain}{24-hour sum of rainfall (mm)}
+  \item{location_notes}{Site description and bounding boxes, only for locations without exact coordinates}
   }
 }
 \source{
 {Beaufort Lagoon Ecosystems LTER and V. Lougheed. 2020. Carbon flux from aquatic ecosystems of the Arctic Coastal Plain along the Beaufort Sea, Alaska, 2010-2018 ver 7. Environmental Data Initiative.}
-\url{ttps://doi.org/10.6073/pasta/e6c261fbd143e720af5a46a9a131a616}
+\url{https://doi.org/10.6073/pasta/e6c261fbd143e720af5a46a9a131a616}
 }
 \usage{
 ble_co2
