@@ -1,0 +1,145 @@
+---
+title: "pie_marsh: Aboveground plant biomass and density in control and fertilized plots in a Spartina alterniflora-dominated marsh, Rowley River (Plum Island Ecosystems LTER)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{arc_weather}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message = FALSE, warning = FALSE}
+library(lterdatasets)
+library(tidyverse)
+```
+
+```{r}
+summary(pie_marsh)
+marsh <- pie_marsh %>% 
+  mutate( date = as.Date(paste(year, month, day, sep = "/" )) ) %>%
+  mutate( yr_mth = as.Date(paste(year, month, 29, sep = "/" )) ) %>%
+  mutate(across(c(year, month, day), as.integer)) %>%
+  mutate(across(c(treatment, plot, subplot), as.factor)) %>%
+  select(-site)
+
+marsh %>% head()
+marsh %>% group_by(year, treatment) %>% count()
+marsh %>% group_by(year, treatment) %>% count() %>% group_by(year) %>% count()
+```
+two time periods, \
+from 1999 to 2003, all four
+from 2004 to 2011, control
+from 2012 to 2019, c and np
+
+```{r}
+marsh %>% group_by(year, treatment) %>% count() 
+```
+same number of plots for each treatment
+
+```{r}
+marsh %>% 
+  #group_by(date, treatment, plot) %>% 
+  #summarise(across((biomass:density), mean)) %>%
+  ggplot(aes(x = date, y = biomass, color = treatment)) +
+  geom_point()
+
+marsh %>% 
+  group_by(yr_mth, treatment) %>%
+  summarise(mean_biomass = mean(biomass)) %>%
+  ggplot(aes(x = yr_mth, y = mean_biomass, color = treatment)) +
+  geom_point()
+```
+
+
+
+if we want to plot , create new variable
+```{r}
+num_trt <- marsh %>% group_by(year, treatment) %>% count() %>% group_by(year) %>% count(name = "num_trt")
+marsh <- marsh %>%
+  left_join(num_trt, by="year") %>%
+  mutate(num_trt = factor(num_trt, levels = c(4, 1, 2)))
+```
+
+
+```{r}
+marsh %>% 
+  group_by(yr_mth, treatment, num_trt) %>%
+  summarise(mean_biomass = mean(biomass)) %>%
+  ggplot(aes(x = yr_mth, y = mean_biomass, color = treatment)) +
+  geom_point() +
+  facet_wrap(~num_trt, scales = "free")
+
+marsh %>% 
+  group_by(year, treatment) %>%
+  summarise(mean_biomass = mean(biomass)) %>%
+  ggplot(aes(x = year, y = mean_biomass, color = treatment)) +
+  geom_line()
+```
+
+month matters
+```{r}
+marsh %>% 
+  group_by(year, treatment, num_trt) %>%
+  summarise(mean_biomass = mean(biomass)) %>%
+  ggplot(aes(x = year, y = mean_biomass, color = treatment)) +
+  geom_line() +
+  facet_wrap(~num_trt, scales = "free_x")
+
+marsh %>% 
+  group_by(month, treatment, num_trt) %>%
+  summarise(mean_biomass = mean(biomass)) %>%
+  ggplot(aes(x = month, y = mean_biomass, color = treatment)) +
+  geom_line() +
+  facet_wrap(~num_trt)
+```
+
+
+```{r}
+marsh %>% 
+  ggplot(aes(x=biomass)) +
+  geom_histogram(aes(fill=treatment), binwidth=200, alpha=0.5) +
+  facet_wrap(~num_trt)
+
+marsh %>% 
+  ggplot(aes(x= biomass)) +
+  geom_histogram(aes(fill=treatment), alpha=0.5) +
+  facet_wrap(~num_trt)
+
+marsh %>%
+  ggplot(aes(x = biomass)) +
+  geom_density(aes(fill=treatment), alpha = 0.6, position = "stack") +
+  facet_wrap(~num_trt)
+```
+
+```{r}
+marsh %>%
+  ggplot(aes(biomass, density, color=num_trt)) +
+  geom_point() +
+  facet_wrap(~treatment)
+
+marsh %>%
+  ggplot(aes(log10(biomass), log10(density), color=num_trt)) +
+  geom_point() +
+  facet_wrap(~treatment)
+
+marsh %>%
+  ggplot(aes(log10(biomass), log10(density), color=num_trt)) +
+  geom_point() +
+  facet_wrap(~treatment + plot)
+```
+
+
+# Citation
+
+Morris, J. 2020. Aboveground plant biomass and density in control and fertilized plots in a Spartina alterniflora-dominated marsh, Rowley River, Plum Island Ecosystem LTER, MA. ver 2. Environmental Data Initiative. https://doi.org/10.6073/pasta/d2d045ed569f51d1bf23637b42cf8ea6 (Accessed 2021-05-24).
+
+
+# How we processed the raw data
+
+`r knitr::spin_child(here::here("data-raw","pie_marsh.R"))`
