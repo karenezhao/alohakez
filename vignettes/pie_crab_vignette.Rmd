@@ -1,0 +1,117 @@
+---
+title: "pie_crab: Fiddler crab body size in salt marshes from Florida to Massachusetts, USA at PIE and VCR LTER and NOAA NERR sites during summer 2016."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{arc_weather}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE, warning = FALSE
+)
+```
+
+```{r setup, message = FALSE, warning = FALSE}
+library(alohakez)
+library(tidyverse)
+library(rstatix)
+library(GGally)
+```
+
+```{r}
+pie_crab %>% group_by(date, latitude, site, mata, matw) %>%
+  count() %>% arrange(latitude)
+max(pie_crab$date) - min(pie_crab$date)
+max(pie_crab$latitude) - min(pie_crab$latitude)
+```
+generally, higher latitude, lower air and water temp
+13 sites were sampled, within 20 days, between july 24 and aug 13
+each site had 25 - 37 crabs,
+
+```{r}
+pie_crab %>% group_by(latitude, site) %>%
+  get_summary_stats(size, type = c("common")) %>%
+  select(latitude, site, n, mean, min, max, sd)
+levels(pie_crab$site)
+pie_crab <- pie_crab %>%
+  mutate(site = fct_reorder(site, latitude, min),
+         name = fct_reorder(name, latitude, min))
+```
+```{r}
+pie_crab %>%
+  ggplot(aes(y=as.numeric(factor(latitude)), group = latitude)) +
+  geom_boxplot(aes(size)) +
+  scale_x_continuous(breaks = seq(from = 6, to = 24, by = 6)) +
+  scale_y_continuous(
+    breaks = 1:length( levels(pie_crab$site) ),
+    labels = levels( factor(pie_crab$latitude) ),
+    sec.axis = sec_axis(~.,
+                        breaks = 1:length( levels(pie_crab$site) ),
+                        labels = levels(pie_crab$name)
+                     )
+  ) +
+  theme(axis.text.y.right = element_text(colour = "darkblue")) +
+  labs(y = "latitude of salt marsh",
+       x = "carapace width of crab (mm)")
+```
+
+
+```{r}
+crab <- pie_crab %>% group_by(latitude, mata, sata, matw, satw) %>%
+  summarise(mean_size = mean(size), max_size = max(size))
+```
+
+
+```{r}
+mod0 <- lm(mean_size~ latitude, data = crab)
+summary(mod0)
+
+mod1 <- lm(mean_size~ mata+sata+matw+satw, data = crab)
+anova(mod1)
+summary(mod1)
+vif(mod1)
+
+mod2 <- lm(mean_size~ sata+matw+satw, data = crab)
+anova(mod2)
+vif(mod2)
+
+mod3 <- lm(mean_size~ matw+satw, data = crab)
+anova(mod3)
+vif(mod3)
+summary(mod3)
+```
+
+
+```{r}
+mod0 <- lm(max_size~ latitude, data = crab)
+summary(mod0)
+
+mod1 <- lm(max_size~ mata+sata+matw+satw, data = crab)
+summary(mod1)
+vif(mod1)
+
+mod2 <- lm(max_size~ sata+matw+satw, data = crab)
+summary(mod2)
+vif(mod2)
+
+mod3 <- lm(max_size~ matw+satw, data = crab)
+anova(mod3)
+vif(mod3)
+summary(mod3)
+```
+
+
+```{r}
+# Citation
+
+Johnson, D. 2019. Fiddler crab body size in salt marshes from Florida to Massachusetts, USA at PIE and VCR LTER and NOAA NERR sites during summer 2016. ver 1. Environmental Data Initiative. https://doi.org/10.6073/pasta/4c27d2e778d3325d3830a5142e3839bb (Accessed 2021-05-27).
+
+Johnson DS, Crowley C, Longmire K, Nelson J, Williams B, Wittyngham S. The fiddler crab, Minuca pugnax, follows Bergmann's rule. Ecol Evol. 2019;00:1–9. https://doi.org/10.1002/ece3.5883
+
+# How we processed the raw data
+
+`r knitr::spin_child(here::here("data-raw","pie_crab.R"))`
