@@ -1,8 +1,5 @@
 ## code to prepare `cap_hoa` dataset goes here
 
-usethis::use_data(cap_hoa, overwrite = TRUE)
-## code to prepare `cap_hoa` dataset goes here
-
 # Attach packages
 library(usethis)
 library(metajam)
@@ -10,7 +7,7 @@ library(tidyverse)
 library(janitor)
 
 # Save link location for the data package:
-cap_url <- "https://data.sustainability.asu.edu/cap-portal/dataviewer?packageid=knb-lter-cap.640.1&entityid=1e80efc60f1b7cbf765fe867d0f20575"
+cap_url <- "https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-cap.640.1&entityid=1e80efc60f1b7cbf765fe867d0f20575"
 
 # Download the data package with metajam
 cap_download <- download_d1_data(data_url = cap_url, path = tempdir(), dir_name="cap")
