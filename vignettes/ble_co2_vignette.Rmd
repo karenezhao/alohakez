@@ -1,0 +1,202 @@
+---
+title: "ble_co2_vignette: Carbon flux from aquatic ecosystems of the Arctic Coastal Plain along the Beaufort Sea, Alaska, 2010-2018 (Beaufort Lagoon Ecosystems LTER)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ble_co2_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE, message = FALSE,
+  fig.width = 6.5, fig.height = 4.5
+)
+```
+
+```{r setup}
+library(lterdatasets)
+library(tidyverse)
+```
+
+# Background Information \
+
+From Lougheed, Vanessa & Tweedie, C.E. & Andresen, Christian & Armendariz, A.M. & Escarzaga, Stephen & Tarin, G.. (2020). Patterns and Drivers of Carbon Dioxide Concentrations in Aquatic Ecosystems of the Arctic Coastal Tundra. Global Biogeochemical Cycles. 34. : \
+
+> Multiple lines of evidence have emerged in recent years indicating that relatively small coastal watersheds in the Arctic are changing dramatically and may be substantial sources of carbon to the atmosphere and nearshore coastal waters. Such coastal landscapes appear to be warming and greening more than most other landscapes in the Arctic, with dramatic changes in structure and function most notable in wetland cover types. \
+
+> The source, fate, and transport of carbon in these small coastal ecosystems are poorly understood and their exclusion from regional carbon budgets may lead to underestimation of sources of carbon to the atmosphere and the Arctic Ocean. Numerous studies have focused on the largest Arctic rivers in transporting carbon to the ocean and atmosphere, with these systems acting as substantial sources of CO2 to the atmosphere. However, in one of the earliest comprehensive studies of Arctic aquatic‐atmosphere exchange, Kling et al. (1991) found that even the smaller lakes and streams of the Alaskan tundra released CO2 to the atmosphere likely as a result of in situ respiration of terrestrially derived dissolved organic carbon (DOC). In Arctic and boreal freshwaters in particular, there is often a close association between pCO2 and DOC concentrations. There is thus a need for a comprehensive comparison of the magnitude and drivers of terrestrially derived carbon as it flows through multiple freshwater landscape components (i.e., rivers, ponds, and lakes) on a path from land to sea.
+
+This dataset comes from a study that aims to examine patterns of carbon flux among multiple Arctic aquatic ecosystem types (pond, lake, river, lagoon, and ocean). Multiple aquatic ecosystems (pond, lake, river, lagoon, and ocean) on the Arctic Coastal Plain
+near Utqiaġvik, Alaska, USA, were visited to determine their relative atmospheric CO2 flux and how this may have changed over time. 
+
+# Initial Exploration
+```{r}
+ble_co2$habitat <- factor(ble_co2$habitat,
+                          levels = c("Ocean", "Lagoon" , "Salt-River", "LAKE", "RIVER", "POND", "TK-POND"))
+habitat_labels <- c("Ocean", "Lagoon" , "Brackish river", "Lake", "Freshwater river", "Pond", "Thermokarst pond")
+ble_co2$year <- factor(ble_co2$year,
+                          levels = c(2015, 2017, 2018))
+ble_co2 %>% group_by(habitat, fw_sal, site) %>% count() %>%
+  group_by(habitat, fw_sal) %>% count()
+```
+a total of 20 tundra ponds, 6 thermokarst ponds, 5 rivers (freshwater and brackish), and 6 lakes were sampled. \
+
+```{r}
+ble_co2 %>% group_by(habitat, fw_sal, water_column_position) %>% count() 
+```
+
+# Data Wrangling
+```{r}
+ble_co2 %>% 
+  group_by(year, habitat, fw_sal, site, station, water_column_position, woy) %>% 
+  count() %>% arrange(desc(n))
+```
+For sites sampled more than once per week, we will take the weekly average. \
+```{r}
+data <- ble_co2 %>% 
+  group_by(year, habitat, fw_sal, site, woy) %>% 
+  summarise(across(c(doc:air_temp_c), ~mean(.x, na.rm = TRUE))) %>% ungroup()
+data
+```
+Take a look at the average among habitats \
+```{r}
+mean_pCO2 <- data %>% 
+  select(habitat, pCO2) %>%
+  pivot_wider(names_from = habitat,
+              values_from = pCO2,
+              values_fn = mean) %>% select(levels(ble_co2$habitat))
+mean_pCO2
+```
+Take a look at the average among year \
+```{r}
+data %>% group_by(year, habitat) %>% count() %>% arrange(habitat)
+data %>%
+  select(year, habitat, pCO2) %>%
+  group_by(year, habitat) %>%
+  pivot_wider(names_from = habitat,
+              values_from = pCO2,
+              values_fn = mean) %>% select(levels(ble_co2$habitat)) %>% arrange(year) %>%
+  bind_rows(c(year="avg", mean_pCO2))
+```
+
+
+# Data Visualization
+```{r}
+colors <- c("Freshwater" = 'deepskyblue2', "Saline" = 'royalblue3')
+theme_set(theme_light())
+theme_update(legend.title=element_blank())
+```
+
+Mean pCO2 among Habitats \
+```{r fig.width = 7.5, fig.height = 5.5}
+data %>% group_by(habitat, fw_sal) %>% summarise(across(pCO2, ~ mean(.x,))) %>%
+  ggplot(aes(habitat, pCO2, fill=fw_sal)) +
+  geom_bar(stat="identity") +
+  scale_x_discrete(labels=habitat_labels) +
+  labs(x="", y= "pCO2(uatm)", title="Mean pCO2 among Habitats") +
+  scale_fill_manual(values=colors)
+```
+
+# Explore Relationships
+
+**Dissolved organic carbon (DOC) concentration** \
+```{r}
+data %>% 
+  ggplot(aes(doc, pCO2, color=fw_sal)) +
+  geom_point(aes(shape=habitat)) +
+  scale_color_manual(values=colors) +
+  scale_shape_manual(labels=habitat_labels, values=c(15, 0, 25, 5, 17, 1, 19)) +
+  labs(x="Dissolved organic carbon (mg/L)", y= "pCO2(uatm)", 
+       title="Relationship between pCO2 (μatm) and DOC (mg/L)")
+```
+
+DOC and pCO2 levels were lowest in saline and brackish sites, including the ocean, lagoon, and brackish rivers. \
+We can log the variables to spread out observations \
+```{r}
+p <- data %>% 
+  ggplot(aes(x = log10(doc), y = log10(pCO2))) +
+  geom_point(aes(shape=habitat, color=fw_sal), size=2) +
+  scale_color_manual(values=colors) +
+  scale_shape_manual(labels=habitat_labels, values=c(15, 0, 17, 5, 2, 1, 16)) +
+  labs(x="log(DOC) (mg/L)", y= "log(pCO2) (μatm)", 
+       title="Relationship between pCO2 (μatm) and DOC (mg/L)")
+p
+```
+
+Add a linear model based on freshwater/saline sites \
+```{r}
+mod_sal <- data %>% filter(fw_sal == "Saline") %>% 
+  lm(log10(pCO2) ~ log10(doc), data = .)
+summary(mod_sal)
+
+mod_fw <- data %>% filter(fw_sal != "Saline") %>% 
+  lm(log10(pCO2) ~ log10(doc), data = .)
+summary(mod_fw)
+
+p + geom_smooth(aes(linetype = fw_sal), 
+              method = "glm", 
+              color="darkgreen", fill="seagreen3", alpha=0.1) +
+  annotate(geom="text", x=1, y=2.2, 
+           label="log pCO2 = 2.22+0.22log DOC, r2=0.65, p<0.006", alpha=0.6) +
+  annotate(geom="text", x=1.1, y=3.7, 
+           label="log pCO2 = 1.95+0.92log DOC, r2=0.55, p<0.0001", alpha=0.6)
+```
+
+(If you would like to annotate the regression coefficients and r-squared directly on the plot, use the `ggpmisc` package) \
+
+Among all site types, weekly average pCO2 could be partially explained by DOC concentration, with the slope of the line for freshwater sites more than 4 times as steep as that for saline/brackish sites. \
+However, these models are likely driven by differences among habitat types.
+
+# Look at one habitat closer
+
+```{r}
+pond <- ble_co2 %>%
+  filter(habitat=="POND")
+# Take daily averages
+pond <- ble_co2 %>%
+  filter(habitat=="POND") %>%
+  group_by(year, site, station, julian_day) %>%
+  summarise(across(doc:air_temp_c, ~mean(.x, na.rm = TRUE))) %>% ungroup() %>% arrange(year, julian_day)
+```
+
+```{r}
+pond  %>%
+  ggplot(aes(x = log10(doc), y = log10(pCO2))) +
+  geom_point(aes(color=year)) +
+  labs(x="log(DOC) (mg/L)", y= "log(pCO2) (μatm)",
+       title="Relationship between pCO2 (μatm) and DOC (mg/L)")
+summary(lm(log10(pCO2) ~ log10(doc), pond))
+```
+Clearly, log(DOC) is not a main driver of pCO2 in freshwater ponds. Let's try another variable \
+
+```{r}
+p <- pond  %>%
+  ggplot(aes(x = water_temp_c, y = log10(pCO2))) +
+  geom_point(aes(color=year)) +
+  labs(x="Average Daily Water temperature in Celcius", y= "log(pCO2) (μatm)",
+       title="Relationship between pCO2 (μatm) and water temperature (C)")
+summary(lm(log10(pCO2) ~ water_temp_c, pond))
+p + 
+  geom_smooth( 
+              method = "lm", formula = (y~x),
+              color="darkgreen", fill="seagreen3", alpha=0.3)
+```
+
+Even though we have a low R-squared, meaning that a small proportion of variance in pCO2 is being explained by water temperature, \
+the extremely low p-value (0.0001) shows that water temperature is still a significant predictor of pCO2 for ponds. \
+If we want a better regression model to predict pCO2 in ponds, we would need to add additional variables (possibly other environemntal factors, like precipitation) to the function. Check the [Environmental Data Initiative](https://doi.org/10.6073/pasta/e6c261fbd143e720af5a46a9a131a616) for more data related to carbon flux in pond. 
+
+
+# Citation
+
+Beaufort Lagoon Ecosystems LTER and V. Lougheed. 2020. Carbon flux from aquatic ecosystems of the Arctic Coastal Plain along the Beaufort Sea, Alaska, 2010-2018 ver 7. Environmental Data Initiative. https://doi.org/10.6073/pasta/e6c261fbd143e720af5a46a9a131a616 (Accessed 2021-05-09).
+
+Lougheed, Vanessa & Tweedie, C.E. & Andresen, Christian & Armendariz, A.M. & Escarzaga, Stephen & Tarin, G.. (2020). Patterns and Drivers of Carbon Dioxide Concentrations in Aquatic Ecosystems of the Arctic Coastal Tundra. Global Biogeochemical Cycles. 34. 10.1029/2020GB006552. 
+
+
+# How we processed the raw data
+
+`r knitr::spin_child(here::here("data-raw","ble_co2.R"))`
