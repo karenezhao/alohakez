@@ -5,7 +5,7 @@
 \alias{ble_co2}
 \title{Carbon flux from aquatic ecosystems of the Arctic Coastal Plain along the Beaufort Sea, Alaska, 2010-2018}
 \format{
-A tibble with 231 rows and 16 variables:
+A tibble with 231 rows and 15 variables:
 \describe{
   \item{year}{Year data were collected}
   \item{habitat}{Habitat type (pond, lake, river, lagoon, ocean):
@@ -22,7 +22,6 @@ A tibble with 231 rows and 16 variables:
   \item{water_temp_c}{Water temperature in degrees Celsius}
   \item{pCO2}{Partial pressure of CO2 (uatm)}
   \item{air_temp_c}{Air temperature in degrees Celsius}
-  \item{daily_rain}{24-hour sum of rainfall (mm)}
   \item{location_notes}{Site description and bounding boxes, only for locations without exact coordinates}
   }
 }
@@ -34,6 +33,6 @@ A tibble with 231 rows and 16 variables:
 ble_co2
 }
 \description{
-Multiple aquatic ecosystems (pond, lake, river, lagoon, ocean) on the Arctic Coastal Plain (ACP) near Utqiaġvik, AK were visited to determine their relative contribution to landscape-level atmospheric CO2 flux and how this may have changed over time. pCO2 (partial pressure of carbon dioxide) was monitored in late summer (late July to mid-August) over a period of four years (2013, 2015, 2017, 2018) from open water areas and is related to habitat type, dissolved organic carbon (DOC) and environmental factors (temperature, radiation, rainfall). Data include both daily averages from most sites, as well as spatial representation of pCO2 in Elson Lagoon and diel cycles of pCO2 from a tundra pond. Pond NEP (net ecosystem production) is estimated by free water metabolism and presented as daily estimates over a four summer period.
+Multiple aquatic ecosystems (pond, lake, river, lagoon, ocean) on the Arctic Coastal Plain (ACP) near Utqiaġvik, AK were visited to determine their relative contribution to landscape-level atmospheric CO2 flux and how this may have changed over time.
 }
 \keyword{datasets}

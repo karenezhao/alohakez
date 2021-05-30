@@ -26,6 +26,6 @@ A tibble with 392 rows and 9 variables:
 pie_crab
 }
 \description{
-We collected ~30 male, adult Minuca pugnax from thirteen marshes from  Florida to Massachusetts and measured their carapace width with calipers. Water and air temperature data were collected from long-term monitoring programs (such as those from Long Term Ecological Research sites LTERs) and from public weather stations.
+We collected ~30 male, adult Minuca pugnax from thirteen marshes from  Florida to Massachusetts and measured their carapace width with calipers. Water and air temperature data were collected from monitoring programs (i.e., LTER, NERR sites), nearby weather stations, and ocean buoys for 2016.
 }
 \keyword{datasets}

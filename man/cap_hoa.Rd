@@ -7,17 +7,19 @@
 \format{
 A tibble with 39 rows and 13 variables:
 \describe{
-  \item{site}{Survey 200 site name}
-  \item{year}{Year HOA developed}
-  \item{hoa}{Is the neighborhood part of a HOA? 1=yes, 2=no}
-  \item{nat_bird}{Native bird diversity index (Shannon) from PASS bird survey}
-  \item{plnt}{Plant diversity index (Shannon) from 2005 Survey 200}
-  \item{arthropod}{Arthropod diversity (Shannon) from 2005 Survey 200}
-  \item{income}{Median household income of US Census Block Group}
-  \item{yrbuilt}{Average age of housing stock in US Census Block Group}
-  \item{x3hadist}{At Survey 200 plot center, distance to 3.2 ha contiguous desert tract (m)}
-  \item{x1km_imp}{At Survey 200 plot center. Decimal fraction of 1 km plot classified impervious surface}
-  \item{num_te}{Total number of thin-leaf evergreen trees along 100m transect at Survey 200 plot center}
+  \item{site}{a character denoting the Survey 200 site name}
+  \item{hoa_name}{a character denoting the Legal name of the HOA development}
+  \item{muni_1}{a character denoting the name of the Municipality HOA located}
+  \item{year}{a number denoting the Year HOA developed}
+  \item{hoa}{a number denoting the answer to Is the neighborhood part of a HOA? 1=yes, 2=no}
+  \item{nat_bird}{a number denoting the Native bird diversity index (Shannon) from PASS bird survey}
+  \item{plnt}{a number denoting the Plant diversity index (Shannon) from 2005 Survey 200}
+  \item{arthropod}{a number denoting the Arthropod diversity (Shannon) from 2005 Survey 200}
+  \item{income}{a number denoting the Median household income of US Census Block Group}
+  \item{yrbuilt}{a number denoting the Average age of housing stock in US Census Block Group}
+  \item{x3hadist}{a number denoting the distance to 3.2 ha contiguous desert tract (m) at Survey 200 plot center}
+  \item{x1km_imp}{a number denoting the decimal fraction of 1 km plot classified impervious surface at Survey 200 plot center}
+  \item{num_te}{a number denoting the total number of thin-leaf evergreen trees along 100m transect at Survey 200 plot center}
   }
 }
 \source{
