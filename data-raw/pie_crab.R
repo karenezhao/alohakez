@@ -1,4 +1,4 @@
-## code to prepare `pie_hoa` dataset goes here
+## code to prepare `pie_crab` dataset goes here
 
 # Attach packages
 library(usethis)
