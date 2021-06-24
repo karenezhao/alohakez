@@ -16,19 +16,18 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(lterdatasets)
+library(alohakez)
 library(tidyverse)
 library(rstatix)
 library(GGally)
 ```
 
-# Homeowner Associations (HOA) as a Vehicle for Promoting Native Urban Biodiversity
 
 ## Background Information
 
-> Phoenix has experienced dramatic land-use and land-cover change over the past 20 years as it has become one of the fastest growing American cities (U.S. Census Bureau 2000). Virtually all new development during this period used HOA management. Such patterns of rapid growth dominated by HOA management are not unique to Phoenix; subdivisions across the United States face similar challenges of improving biodiversity potential in planned communities." \
+> "The loss of habitat due to suburban and urban development represents one of the greatest threats to biodiversity. Phoenix has experienced dramatic land-use and land-cover change over the past 20 years as it has become one of the fastest growing American cities. Virtually all new development during this period used HOA management. Such patterns of rapid growth dominated by HOA management are not unique to Phoenix; subdivisions across the United States face similar challenges of improving biodiversity potential in planned communities. Therefore, the conditions and restrictions imposed upon the homeowner by the HOA could have profound effects on the local wildlife habitat (Lerman, 2012)." \
 
-This data is from a study that investigated the relationship between HOAs and biodiversity in Phoenix, Arizona, through the CAP LTER project. The scientists focused on 39 of the 204 long-term monitoring plots, all located in residential land uses. \
+This dataset is from a study that investigated the relationship between HOAs and biodiversity in Phoenix, Arizona. Researchers focused on 39 long-term monitoring plots, all located in residential land uses. \
 
 **Take a look at data**
 ```{r}
@@ -45,11 +44,11 @@ cap_hoa %>% filter(!is.na(arthropod)) %>% group_by(hoa) %>% count()
 Roughly half of all monitoring sites belonged to a HOA \
 
 
-## Features of household types \
+# Features of household types \
 Before we see test if neighborhood management (HOA present or absent) relates to biodiversity... \
 let's look at how the surrounding landscape (amount of impervious surface, distance to wildlands, and density of natvie trees), socioeconomic factor (household income for the associated U.S. Census Block Group), and age of the housing differed between the two neighborhood types \
 
-Plot Household income, Neighborhood age (yr), Distance to wildlands (m), Impervious surface (%), and the number of trees \
+**Plot Household income, Neighborhood age (yr), Distance to wildlands (m), Impervious surface (%), and the number of trees: ** \
 ```{r fig.width=11, fig.height=3.3}
 cap_hoa %>%
   gather(feature, value, income:num_te) %>%
@@ -70,16 +69,16 @@ cap_hoa %>% filter(num_te < 60) %>%
   labs(x="", y= "Number of Trees")
 cap_hoa %>%
   group_by(hoa) %>% filter(num_te<60) %>%
-  get_summary_stats(num_te, type = "common")
+  get_summary_stats(num_te, show = c("n", "min", "max", "mean", "median", "sd", "iqr"))
 ```
 
-One of the most common tests for comparing between two groups is the t-test. However, normality is a key assumption of a t-test. Looking at the plot above, our data does not seem normal. To confirm this, we can use the Shapiro-Wilk test. 
+One of the most common tests for comparing between two groups is the t-test. However, normality is a key assumption of a t-test. Looking at the plot above, our data does not seem normal. To confirm this, we can use the Shapiro-Wilk test. This test rejects the hypothesis of normality when the p-value is less than or equal to 0.05. \
 ```{r}
 cap_hoa %>% filter(num_te < 60) %>% group_by(hoa) %>% shapiro_test(num_te)
 ```
-the p-values of the Shapiro-Wilk tests confirm it (since we reject the null hypothesis of normality for both distributions at the 5% significance level). \
+the p-values of the Shapiro-Wilk tests are extremely low, and we reject the null hypothesis of normality for both distributions \
 
-### Wilcoxon test
+## Wilcoxon test
 When the normality assumption is violated, we can turn to Wilcoxon test, a nonparametric test, meaning that it does not rely on the data belonging to any particular parametric family of probability distributions. \
 Tthe null and alternative hypothesis of the Wilcoxon test are as follows: \
 $H_0$: the 2 groups are similar \
@@ -88,10 +87,11 @@ $H_1$: the 2 groups are different \
 wilcox.test(cap_hoa$num_te ~ cap_hoa$hoa)
 ```
 
-The p-value is large. Therefore, at any reasonable significance level, we fail to reject the null hypothesis and we conclude that tree density does not differ between the types of neighborhoods \
+The p-value is large. Therefore, at any reasonable significance level, we fail to reject the null hypothesis and conclude that tree density does not differ between the types of neighborhoods \
 
 Now, the question is, do the number of trees related to the biodiversity? \
-### Correlation plots
+
+## Correlation plots
 ```{r fig.height=5.5, fig.width=9.5}
 diversity_label <- c("Native Bird", "Plant", "Arthropod")
 names(diversity_label) <- c("nat_bird", "plnt", "arthropod")
@@ -123,15 +123,18 @@ cap_hoa %>% select(hoa, nat_bird:arthropod, num_te) %>% filter(num_te<60) %>%
 ```
 From the scatterplot and coefficients above, we see that there exists some positive relationship between the number of trees and native bird diversity \
 
-## Diversity relationships 
 
-Compute summary statistics for native bird diversity, plant diversity, and arthropod diversity
+# Diversity relationships 
+
+Compute summary statistics for native bird diversity, plant diversity, and arthropod diversity: \
 ```{r}
 cap_hoa %>%
   group_by(hoa) %>%
-  get_summary_stats(nat_bird:arthropod, type = "common") %>% arrange(variable)
+  get_summary_stats(nat_bird:arthropod, show = c("n", "min", "max", "mean", "median", "sd", "iqr")) %>%
+  arrange(variable)
 ```
-### Stripcharts
+
+## Jitter Plots
 Plot native bird diversity, plant diversity, and arthropod diversity between neighborhoods with and without a HOA \
 ```{r fig.height=3.2, fig.width=8}
 cap_hoa %>% 
@@ -143,18 +146,19 @@ cap_hoa %>%
   labs(x="", y = "Diversity Indices")
 ```
 
-### two-sample t-test
+## two-sample t-test
 Even though the t-test is reasonably robust to non-normality, it may deviate the type 1 error rate and the power of the test. \
 ```{r fig.height=7, fig.width=6}
 cap_hoa %>%
   gather(diversity_type, value, nat_bird:arthropod) %>%
   ggplot(aes(x=value)) +
   geom_histogram(aes(fill=hoa), binwidth = 0.3) +
-  facet_wrap(vars(diversity_type, hoa), nrow=3, scales = "free", labeller = labeller(diversity_type = diversity_label)) +
+  facet_wrap(vars(diversity_type, hoa), 
+             nrow=3, scales = "free", labeller = labeller(diversity_type = diversity_label)) +
   labs(x= "Diversity Indices")
 ```
 
-some of these histograms do not look normal, just like what we did in the previous section, we can test the normality by using the Shapiro-Wilk test. The test rejects the hypothesis of normality when the p-value is less than or equal to 0.05. \
+some of these histograms do not look normal, just like what we did in the previous section, we can test the normality by using the Shapiro-Wilk test.  \
 ```{r}
 cap_hoa %>% 
   group_by(hoa) %>% shapiro_test(nat_bird, plnt, arthropod) %>% arrange(variable)
@@ -166,46 +170,55 @@ cap_hoa %>% filter(nat_bird<1)
 nat_bird_outlier <- cap_hoa %>% filter(hoa==1 & nat_bird<1) 
 ```
 
-Peform t-test: \
+Now peform t-test: \
+```{r}
+hoa_long <- cap_hoa %>%
+  select(hoa:arthropod) %>%
+  pivot_longer(-hoa, "variable")
+head(hoa_long)
+hoa_long %>% group_by(variable) %>%
+  t_test(value ~ hoa) %>% 
+  select(variable, n1:p) %>% arrange(variable)
+```
+
+- Neighborhoods belonging to a HOA had significantly greater plant diversity than neighborhoods not belonging to a HOA. \
+
+- Arthropod diversity did not differ between the two neighborhood types, which is also evident from the box plot above. (It is possible that this the sampling design of surveying one plant per neighborhood was too small to accurately reflect the arthropod community in the neighborhood. It is also possible that specific landscape practices disturbs the living condition for arthropods.)
+
+- Native bird diversity differed between the two groups of neighborhoods, and showed a trend toward increased diversity in neighborhoods with HOAs. \
+
 ```{r}
 cap_hoa %>% t_test(nat_bird ~ hoa)
-cap_hoa %>% filter(nat_bird!=nat_bird_outlier$nat_bird) %>% t_test(nat_bird ~ hoa)
+cap_hoa %>% filter(nat_bird!=nat_bird_outlier$nat_bird) %>% 
+  t_test(nat_bird ~ hoa)
 ```
-Native bird diversity differed between the two groups of neighborhoods, and showed a trend toward increased diversity in neighborhoods with HOAs. When we excluded the one neighborhood with extremely low native bird diversity, the relationship is significant. \
+When we excluded the one neighborhood with extremely low native bird diversity, the relationship is significant. \
 
-Recall that, although not significant, newer neighborhoods were slightly more likely to have a HOA. Since housing age reflects the time since the initial disturbance to the landscape, we can perform an analysis of covariance to account for housing age
+Recall that, although not significant, newer neighborhoods were slightly more likely to have a HOA. Since housing age reflects the time since the initial disturbance to the landscape, we can perform an analysis of covariance (ANCOVA) to account for housing age
 ```{r}
-bird.aov <- cap_hoa %>% anova_test(nat_bird ~ yrbuilt*hoa)
+bird.aov <- cap_hoa %>% anova_test(nat_bird ~ hoa*yrbuilt)
 get_anova_table(bird.aov)
-bird.aov <- cap_hoa %>% filter(nat_bird!=nat_bird_outlier$nat_bird) %>% anova_test(nat_bird ~ yrbuilt*hoa)
-get_anova_table(bird.aov)
+bird.aov2 <- cap_hoa %>% filter(nat_bird!=nat_bird_outlier$nat_bird) %>% 
+  anova_test(nat_bird ~ hoa*yrbuilt)
+get_anova_table(bird.aov2)
 ```
 when accounting for the covariance of housing age, we see a significant relationship between neighborhood type and bird diversity.  \
 
-```{r}
-cap_hoa %>% t_test(plnt ~ hoa)
-```
-Neighborhoods belonging to a HOA had significantly greater plant diversity than neighborhoods not belonging to a HOA. \
 
-```{r}
-cap_hoa %>% t_test(arthropod ~ hoa)
-```
-Arthropod diversity did not differ between the two neighborhood types, which is also evident from the box plot above. It is possible that this the sampling design of surveying one plant per neighborhood was too small to accurately reflect the arthropod community in the neighborhood. It is also possible that specific landscape practices disturbs the living condition for arthropods.
+## Conclusion
 
-## Conclusions
-Urbanization currently contributes to the homogenization of urban diversity, but HOAs can address this through design and management to support rich animal communities. \
-This study demonstrates differences in biodiversity between neighborhood types, and suggests management differences were primarily responsible for the increased native bird and plant diversity in HOA neighborhoods. \
+> This study demonstrates differences in biodiversity between neighborhood types, and suggests management differences were primarily responsible for the increased native bird and plant diversity in HOA neighborhoods. Urbanization currently contributes to the homogenization of urban diversity, but HOAs can address this through design and management to support rich animal communities.  
 
+See [this article](http://dx.doi.org/10.5751/ES-05175-170445) for further discussions.
 
 
 # Citation
 
 Lerman, S. 2016. Homeowner Associations as a vehicle for promoting native urban biodiversity ver 1. Environmental Data Initiative. https://doi.org/10.6073/pasta/e7fb691d6b4bf6974ece085f22ab63fc (Accessed 2021-05-03).
 
-Lerman, S. B., V. K. Turner, and C. Bang. 2012. Homeowner associations as a vehicle for promoting native urban biodiversity. Ecology and Society 17(4): 45.
-http://dx.doi.org/10.5751/ES-05175-170445
+Lerman, S. B., V. K. Turner, and C. Bang. 2012. Homeowner associations as a vehicle for promoting native urban biodiversity. Ecology and Society 17(4): 45. http://dx.doi.org/10.5751/ES-05175-170445
 
 
 # How we processed the raw data
 
-`r knitr::spin_child(here::here("data-raw","cap_hoa_data.R"))`
+`r knitr::spin_child(here::here("data-raw","cap_hoa.R"))`

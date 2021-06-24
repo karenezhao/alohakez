@@ -17,20 +17,13 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(lterdatasets)
+library(alohakez)
 library(tidyverse)
 ```
 
-# Background Information \
+**Background Information**  \
 
-From Lougheed, Vanessa & Tweedie, C.E. & Andresen, Christian & Armendariz, A.M. & Escarzaga, Stephen & Tarin, G.. (2020). Patterns and Drivers of Carbon Dioxide Concentrations in Aquatic Ecosystems of the Arctic Coastal Tundra. Global Biogeochemical Cycles. 34. : \
-
-> Multiple lines of evidence have emerged in recent years indicating that relatively small coastal watersheds in the Arctic are changing dramatically and may be substantial sources of carbon to the atmosphere and nearshore coastal waters. Such coastal landscapes appear to be warming and greening more than most other landscapes in the Arctic, with dramatic changes in structure and function most notable in wetland cover types. \
-
-> The source, fate, and transport of carbon in these small coastal ecosystems are poorly understood and their exclusion from regional carbon budgets may lead to underestimation of sources of carbon to the atmosphere and the Arctic Ocean. Numerous studies have focused on the largest Arctic rivers in transporting carbon to the ocean and atmosphere, with these systems acting as substantial sources of CO2 to the atmosphere. However, in one of the earliest comprehensive studies of Arctic aquatic‐atmosphere exchange, Kling et al. (1991) found that even the smaller lakes and streams of the Alaskan tundra released CO2 to the atmosphere likely as a result of in situ respiration of terrestrially derived dissolved organic carbon (DOC). In Arctic and boreal freshwaters in particular, there is often a close association between pCO2 and DOC concentrations. There is thus a need for a comprehensive comparison of the magnitude and drivers of terrestrially derived carbon as it flows through multiple freshwater landscape components (i.e., rivers, ponds, and lakes) on a path from land to sea.
-
-This dataset comes from a study that aims to examine patterns of carbon flux among multiple Arctic aquatic ecosystem types (pond, lake, river, lagoon, and ocean). Multiple aquatic ecosystems (pond, lake, river, lagoon, and ocean) on the Arctic Coastal Plain
-near Utqiaġvik, Alaska, USA, were visited to determine their relative atmospheric CO2 flux and how this may have changed over time. 
+This dataset comes from a study that aims to examine patterns of carbon flux among multiple Arctic aquatic ecosystem types (pond, lake, river, lagoon, and ocean). Multiple aquatic ecosystems (pond, lake, river, lagoon, and ocean) on the Arctic Coastal Plain near Utqiaġvik, Alaska, USA, were visited to determine their relative atmospheric CO2 flux and how this may have changed over time. 
 
 # Initial Exploration
 ```{r}
@@ -102,7 +95,9 @@ data %>% group_by(habitat, fw_sal) %>% summarise(across(pCO2, ~ mean(.x,))) %>%
 
 # Explore Relationships
 
-**Dissolved organic carbon (DOC) concentration** \
+> "Numerous studies have focused on the largest Arctic rivers in transporting carbon to the ocean and atmosphere, with these systems acting as substantial sources of CO2 to the atmosphere. However, in one of the earliest comprehensive studies of Arctic aquatic‐atmosphere exchange, Kling et al. (1991) found that even the smaller lakes and streams of the Alaskan tundra released CO2 to the atmosphere likely as a result of in situ respiration of terrestrially derived dissolved organic carbon (DOC). In Arctic and boreal freshwaters in particular, there is often a close association between pCO2 and DOC concentrations. There is thus a need for a comprehensive comparison of the magnitude and drivers of terrestrially derived carbon as it flows through multiple freshwater landscape components (i.e., rivers, ponds, and lakes) on a path from land to sea (Lougheed et al., 2020)."
+
+Let's see if **Dissolved organic carbon (DOC) concentration** is a driver of carbon flux \
 ```{r}
 data %>% 
   ggplot(aes(doc, pCO2, color=fw_sal)) +
@@ -114,7 +109,8 @@ data %>%
 ```
 
 DOC and pCO2 levels were lowest in saline and brackish sites, including the ocean, lagoon, and brackish rivers. \
-We can log the variables to spread out observations \
+
+we can log-transform the variables to spread out points \
 ```{r}
 p <- data %>% 
   ggplot(aes(x = log10(doc), y = log10(pCO2))) +
@@ -150,7 +146,7 @@ p + geom_smooth(aes(linetype = fw_sal),
 Among all site types, weekly average pCO2 could be partially explained by DOC concentration, with the slope of the line for freshwater sites more than 4 times as steep as that for saline/brackish sites. \
 However, these models are likely driven by differences among habitat types.
 
-# Look at one habitat closer
+## Look at one habitat closer
 
 ```{r}
 pond <- ble_co2 %>%
@@ -176,7 +172,7 @@ Clearly, log(DOC) is not a main driver of pCO2 in freshwater ponds. Let's try an
 p <- pond  %>%
   ggplot(aes(x = water_temp_c, y = log10(pCO2))) +
   geom_point(aes(color=year)) +
-  labs(x="Average Daily Water temperature in Celcius", y= "log(pCO2) (μatm)",
+  labs(x="Average Daily Water temperature (Celcius)", y= "log(pCO2) (μatm)",
        title="Relationship between pCO2 (μatm) and water temperature (C)")
 summary(lm(log10(pCO2) ~ water_temp_c, pond))
 p + 

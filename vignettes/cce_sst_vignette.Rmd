@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(lterdatasets)
+library(alohakez)
 library(tidyverse)
 ```
 
@@ -353,4 +353,3 @@ Shore Stations Program. 2019. Daily sea-surface temperature measurements, collec
 # How we processed the raw data
 
 `r knitr::spin_child(here::here("data-raw","cce_sst.R"))`
-
