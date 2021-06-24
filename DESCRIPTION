@@ -16,7 +16,22 @@ Imports: crayon, emo
 Remotes: hadley/emo
 Suggests: testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    tibble,
+    ggplot2,
+    dplyr,
+    tidyr,
+    recipes,
+    janitor,
+    usethis,
+    metajam,
+    markdown,
+    tidyverse,
+    here,
+    ggmap,
+    sf,
+    GGally,
+    rstatix
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)
