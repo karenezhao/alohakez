@@ -5,7 +5,13 @@
 \alias{vcr_fish}
 \title{Fish Counts and Lengths in South Bay and Hog Island Bay, Virginia 2012-2018}
 \format{
-An object of class \code{data.frame} with 1720 rows and 17 columns.
+A tibble with 1,720 rows and 17 variables:
+\describe{
+  \item{site}{Site identifier}
+  \item{species_name}{Common name of fish species observed}
+  \item{length}{Length of fish body}
+  \item{count}{Number of fish with the same species and length}
+  }
 }
 \source{
 {McGlathery, K. 2019. Fish Counts and Lengths in South Bay and Hog Island Bay, Virginia 2012-2018 ver 11. Environmental Data Initiative. https://doi.org/10.6073/pasta/af32b580d4646f4b35d7552d83e9b09b (Accessed 2021-03-08).}

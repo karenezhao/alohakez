@@ -1,23 +1,22 @@
 #' Homeowner Associations as a vehicle for promoting native urban biodiversity
 #'
-#' characteristics of HOAs in the greater Phoenix metropolitan area, and corresponding animal (bird or arthropod) and plant diversity within those communities
-#' The Shannon diversity index is commonly used to characterize species diversity in a community. It accounts for both abundance and evenness of the species present.
+#' characteristics of HOAs in the greater Phoenix metropolitan area, and corresponding animal (bird or arthropod) and plant diversity within those communities. The Shannon diversity index is commonly used to characterize species diversity in a community. It accounts for both abundance and evenness of the species present.
 #'
 #' @format A tibble with 39 rows and 13 variables:
 #' \describe{
-#'   \item{site}{a character denoting the Survey 200 site name}
-#'   \item{hoa_name}{a character denoting the Legal name of the HOA development}
+#'   \item{site}{a character denoting the (Survey 200) site name}
+#'   \item{hoa_name}{a character denoting the legal name of the HOA development}
 #'   \item{muni_1}{a character denoting the name of the Municipality HOA located}
-#'   \item{year}{a number denoting the Year HOA developed}
-#'   \item{hoa}{a number denoting the answer to Is the neighborhood part of a HOA? 1=yes, 2=no}
+#'   \item{year}{a number denoting the year HOA developed}
+#'   \item{hoa}{Is the neighborhood part of a HOA? 1=yes, 2=no}
 #'   \item{nat_bird}{a number denoting the Native bird diversity index (Shannon) from PASS bird survey}
 #'   \item{plnt}{a number denoting the Plant diversity index (Shannon) from 2005 Survey 200}
 #'   \item{arthropod}{a number denoting the Arthropod diversity (Shannon) from 2005 Survey 200}
-#'   \item{income}{a number denoting the Median household income of US Census Block Group}
-#'   \item{yrbuilt}{a number denoting the Average age of housing stock in US Census Block Group}
-#'   \item{x3hadist}{a number denoting the distance to 3.2 ha contiguous desert tract (m) at Survey 200 plot center}
-#'   \item{x1km_imp}{a number denoting the decimal fraction of 1 km plot classified impervious surface at Survey 200 plot center}
-#'   \item{num_te}{a number denoting the total number of thin-leaf evergreen trees along 100m transect at Survey 200 plot center}
+#'   \item{income}{a number denoting the median household income of the census block group from the 2000 U.S. Census}
+#'   \item{yrbuilt}{a number denoting the average age of housing stock of the census block group from the 2000 U.S. Census}
+#'   \item{x3hadist}{a number denoting the distance to 3.2 ha contiguous desert tract (m) from the bird monitoring location }
+#'   \item{x1km_imp}{a number denoting the percent of impervious surface within a 1 km radius at each bird monitoring location}
+#'   \item{num_te}{a number denoting the total number of thin-leaf evergreen trees along a 100 m transect at each bird monitoring location}
 #'   }
 #'
 #' @source {Lerman, S. 2016. Homeowner Associations as a vehicle for promoting native urban biodiversity ver 1. Environmental Data Initiative.}

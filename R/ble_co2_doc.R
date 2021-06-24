@@ -10,7 +10,7 @@
 #'   Salt-River = River influenced by saltwater intrusion from lagoon.
 #'   LAKE = Lake, RIVER = Freshwater river, POND = Pond, TK-POND = Thermokarst Pond}
 #'   \item{fw_sal}{Identifies freshwater or saline (incl. brackish) conditions}
-#'   \item{site}{Site name. Not to be confused with a "site" defined in the EML element geographicCoverage}
+#'   \item{site}{Site name}
 #'   \item{station}{When multiple sites within a single site were sampled, they were assigned a different subsite name}
 #'   \item{water_column_position}{Where sample was taken within a water column}
 #'   \item{julien_day}{Day of year starting from Jan 1st. AKDT time}
